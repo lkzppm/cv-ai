@@ -20,6 +20,8 @@ type State = {
   sessions: Session[];
   activeId: string | null;
   theme: "light" | "dark";
+  /** Largura da sidebar do agente (px), ajustável pelo divisor. */
+  chatWidth: number;
 };
 
 type Actions = {
@@ -31,7 +33,10 @@ type Actions = {
   undoCv: () => void;
   setMessages: (id: string, messages: UIMessage[]) => void;
   toggleTheme: () => void;
+  setChatWidth: (px: number) => void;
 };
+
+export const CHAT_WIDTH = { min: 360, max: 820, default: 460 };
 
 const newId = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2));
 
@@ -41,6 +46,7 @@ export const useSessions = create<State & Actions>()(
       sessions: [],
       activeId: null,
       theme: "dark",
+      chatWidth: CHAT_WIDTH.default,
 
       createSession: ({ cv = SAMPLE_CV, title } = {}) => {
         const id = newId();
@@ -97,6 +103,7 @@ export const useSessions = create<State & Actions>()(
             return { ...x, messages, title, updatedAt: Date.now() };
           }),
         })),
+      setChatWidth: (px) => set({ chatWidth: Math.round(Math.min(CHAT_WIDTH.max, Math.max(CHAT_WIDTH.min, px))) }),
       toggleTheme: () => {
         const next = get().theme === "light" ? "dark" : "light";
         // View Transitions API quando disponível: crossfade suave entre temas

@@ -102,7 +102,7 @@ function AgentSidebarInner() {
         )}
       </AnimatePresence>
 
-      <Conversation className="min-h-0 flex-1">
+      <Conversation className="scrollbar-none min-h-0 flex-1">
         <ConversationContent className="gap-5 p-4">
           {messages.length === 0 && <EmptyHero />}
           <AnimatePresence initial={false}>

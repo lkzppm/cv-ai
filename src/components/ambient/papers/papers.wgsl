@@ -1,8 +1,9 @@
 import { hash2 } from "@vgpu/wgsl-std/hash";
 
 // "Papers": folhas de currículo esboçadas (contorno + linhas de texto) em uma
-// grade esparsa, derivando para cima bem devagar, com um foco de luz suave
-// perto do cursor. Opacidade baixa: é textura de fundo, não atração.
+// grade esparsa, derivando para cima bem devagar. Perto do cursor as folhas
+// dobram o canto superior direito (dog-ear) e ganham um pouco mais de tinta;
+// um foco de luz suave acompanha o ponteiro. Opacidade baixa de propósito.
 struct Params {
   time: f32,
   dark: f32,
@@ -53,6 +54,7 @@ fn stroke(d: f32, width: f32, aa: f32) -> f32 {
 
   var ink = 0.0;        // intensidade acumulada do desenho (0..1)
   var ink_name = 0.0;   // a linha do "nome" ganha um pouco mais de peso
+  var near = 0.0;       // proximidade do cursor a esta folha (0..1)
   if (h.x > 0.28) {
     // folha: largura e proporção A4 aproximada, com jitter e balanço sutil
     let w = 0.15 + 0.05 * h.y;
@@ -61,17 +63,44 @@ fn stroke(d: f32, width: f32, aa: f32) -> f32 {
     let bob = vec2f(0.0, sin(params.time * 0.25 + h.x * 6.2832) * 0.005);
     let c = local - jitter - bob;
 
+    // centro da folha de volta ao espaço da tela (desfaz deriva, desencontro e parallax)
+    let center_p = (id + 0.5) * cell + jitter + bob;
+    let center_uv = vec2f(
+      (center_p.x - shift.x) / aspect,
+      center_p.y - params.time * 0.006 - column * cell.y * 0.5 - shift.y,
+    );
+    let dcur = length((center_uv - params.pointer) * vec2f(aspect, 1.0));
+    near = smoothstep(0.40, 0.06, dcur);
+
+    // dobra do canto superior direito: cresce com a proximidade + respiração lenta
+    let breathe = 0.5 + 0.5 * sin(params.time * 0.45 + h.y * 6.2832);
+    let k = w * (0.05 + 0.04 * breathe + 0.40 * near);
+    let a = w * 0.5 - c.x;        // distância da borda direita (>= 0 dentro)
+    let b = c.y + hgt * 0.5;      // distância da borda superior (>= 0 dentro)
+    let s_ab = a + b;
+    let cut = smoothstep(k - aa, k + aa, s_ab);                               // 1 fora do canto cortado
+    let in_corner_box = step(0.0, a) * step(0.0, b) * step(a, k) * step(b, k);
+    let flap = in_corner_box * (1.0 - cut);                                     // triângulo removido
+    let fold = in_corner_box * cut * (1.0 - smoothstep(2.0 * k - aa, 2.0 * k + aa, s_ab)); // aba dobrada
+    let keep = 1.0 - flap;
+
     let d_card = sd_round_box(c, vec2f(w, hgt) * 0.5, 0.012);
-    ink += stroke(d_card, 0.0018, aa) * 0.9;
-    ink += fill(d_card, aa) * 0.12;
+    ink += stroke(d_card, 0.0018, aa) * 0.9 * keep;
+    ink += fill(d_card, aa) * 0.12 * keep;
+    // aba: preenchimento um pouco mais forte, linha da dobra e sombra suave por baixo
+    let d_fold_line = abs(s_ab - k) * 0.7071;
+    ink += fold * 0.34;
+    ink += stroke(d_fold_line, 0.0016, aa) * in_corner_box * 0.9;
+    ink += fill(d_card, aa) * in_corner_box * cut * (1.0 - smoothstep(2.0 * k, 2.6 * k, s_ab)) * 0.10;
 
     // conteúdo: "nome" (barra curta e mais grossa) + 5 linhas de texto
     let left = -w * 0.5 + 0.022;
     let top = -hgt * 0.5 + 0.03;
     let name = sd_round_box(c - vec2f(left + w * 0.19, top + 0.006), vec2f(w * 0.19, 0.0055), 0.0045);
-    ink_name += fill(name, aa);
+    let text_keep = keep * (1.0 - fold);
+    ink_name += fill(name, aa) * text_keep;
     let sub = sd_round_box(c - vec2f(left + w * 0.13, top + 0.024), vec2f(w * 0.13, 0.003), 0.0025);
-    ink += fill(sub, aa) * 0.7;
+    ink += fill(sub, aa) * 0.7 * text_keep;
 
     for (var i = 0; i < 5; i = i + 1) {
       let fi = f32(i);
@@ -81,7 +110,7 @@ fn stroke(d: f32, width: f32, aa: f32) -> f32 {
       // a 3ª linha vira uma "seção" (mais curta e deslocada) para quebrar a monotonia
       let lx = select(left, left + w * 0.06, i == 2);
       let d_line = sd_round_box(c - vec2f(lx + lw * 0.5, y), vec2f(lw * 0.5, 0.0026), 0.002);
-      ink += fill(d_line, aa) * 0.75;
+      ink += fill(d_line, aa) * 0.75 * text_keep;
     }
   }
   ink = clamp(ink, 0.0, 1.0);
@@ -93,8 +122,10 @@ fn stroke(d: f32, width: f32, aa: f32) -> f32 {
   let ink_col = mix(ink_light, ink_dark, params.dark);
   let alpha = mix(0.075, 0.085, params.dark);
 
+  // folhas perto do cursor ficam um pouco mais presentes
+  let presence = 1.0 + 0.9 * near;
   var col = base;
-  col = mix(col, ink_col, ink * alpha + ink_name * alpha * 1.6);
+  col = mix(col, ink_col, (ink * alpha + ink_name * alpha * 1.6) * presence);
 
   // foco de luz suave acompanhando o cursor + leve brilho no topo
   let pv = (uv - params.pointer) * vec2f(aspect, 1.0);

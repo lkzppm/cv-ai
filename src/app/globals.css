@@ -170,6 +170,20 @@
   ::-webkit-scrollbar-thumb:hover { background: color-mix(in oklab, var(--foreground) 24%, transparent); background-clip: padding-box; }
 }
 
+/* Esconde a barra de rolagem mantendo o scroll (aplica também ao filho direto,
+   que é o container de rolagem do StickToBottom/Conversation). */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar,
+.scrollbar-none > div::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none > div {
+  scrollbar-width: none;
+}
+
 @utility glass {
   background: var(--glass);
   border: 1px solid var(--glass-border);
