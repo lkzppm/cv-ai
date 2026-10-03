@@ -58,7 +58,7 @@ export function SessionsRail() {
                     {active && (
                       <motion.span
                         layoutId="session-active-bar"
-                        className="absolute top-2 bottom-2 left-0 w-0.5 rounded-full bg-primary"
+                        className="pointer-events-none absolute inset-0 rounded-xl border-l-[3px] border-primary"
                         transition={{ type: "spring", stiffness: 500, damping: 40 }}
                       />
                     )}
