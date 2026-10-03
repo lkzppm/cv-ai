@@ -59,6 +59,7 @@ Fundo temático e discreto: **folhas de currículo esboçadas** (contorno arredo
 - `papers.ts`: `init → surface → effect(compile({ colors: [surface.format] })) → frameLoop`; uniforms `time`, `dark`, `pointer` (easing 0.05) e `texel`. Pausa com a aba oculta.
 - Fallback CSS (`.ambient-fallback`): linhas finas repetidas em grade + brilho no topo, estático, com máscara radial.
 - Validar: `npx vgpu check src/components/ambient/papers/papers.wgsl`.
+- **v4.2 (2026-10-03):** seis tipos de documento sorteados por célula (currículo, perfil com avatar e tags, gráfico de barras com animação lenta, checklist com checks, carta, nota com selo circular), grade mais densa (célula 0,34×0,42, 86% das células ocupadas), cada coluna sobe numa velocidade própria (profundidade), folhas com inclinação de até ±6° e balanço em dois eixos.
 - **Interação (v4.1):** cada folha calcula a distância do cursor ao seu centro (desfazendo deriva/parallax) e dobra o canto superior direito (dog-ear: canto cortado + aba espelhada pela diagonal `a + b = k`, linha da dobra e sombra), com `k` crescendo com a proximidade e uma respiração lenta. Folhas próximas ganham ~90% mais tinta. Texto some sob o corte e a aba.
 - Para ajustar a presença: `alpha` (opacidade), `h.x > 0.28` (densidade), `time * 0.006` (velocidade), `0.40 * near` (tamanho máximo da dobra).
 
