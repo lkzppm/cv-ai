@@ -148,7 +148,8 @@ function ActiveBracket() {
   useEffect(() => {
     const el = ref.current?.parentElement;
     if (!el) return;
-    const ro = new ResizeObserver(([entry]) => setH(entry.contentRect.height));
+    // offsetHeight = border-box (contentRect ignora o padding do item e deixava o "C" curto)
+    const ro = new ResizeObserver(() => setH(el.offsetHeight));
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
