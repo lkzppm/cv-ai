@@ -88,7 +88,13 @@ export function AgentSidebar() {
                 transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
               >
                 <Message from={m.role}>
-                  <MessageContent className={m.role === "user" ? "bg-primary text-primary-foreground" : ""}>
+                  <MessageContent
+                    className={
+                      m.role === "user"
+                        ? "group-[.is-user]:rounded-2xl group-[.is-user]:rounded-br-[3px] group-[.is-user]:bg-primary group-[.is-user]:text-primary-foreground"
+                        : "max-w-full rounded-2xl rounded-bl-[3px] border border-glass-border bg-background/30 px-4 py-3"
+                    }
+                  >
                     {m.parts.map((part, i) => {
                       switch (part.type) {
                         case "text":

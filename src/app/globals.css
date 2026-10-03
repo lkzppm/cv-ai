@@ -197,8 +197,17 @@
 @utility glass {
   background: var(--glass);
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(14px) saturate(130%);
-  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  backdrop-filter: blur(8px) saturate(130%);
+  -webkit-backdrop-filter: blur(8px) saturate(130%);
+}
+
+/* Vidro quase sem blur: deixa as folhas do fundo visíveis através do chat
+   (blur forte apaga linhas finas de baixa opacidade). */
+@utility glass-clear {
+  background: color-mix(in srgb, var(--glass) 70%, transparent);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(2px) saturate(120%);
+  -webkit-backdrop-filter: blur(2px) saturate(120%);
 }
 
 /* Variante mais opaca para diálogos/popovers que precisam de leitura garantida */

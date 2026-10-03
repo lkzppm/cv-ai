@@ -57,7 +57,7 @@ export function ChatComposer({ status, onSend, onStop, placeholder }: Props) {
     <div
       className={cn(
         "glass relative flex items-end gap-2 rounded-[24px] py-1.5 pr-1.5 pl-4 transition-shadow duration-300",
-        focused ? "ring-glow" : "shadow-[0_10px_30px_-18px_rgba(0,0,0,.6)]",
+        focused ? "ring-glow" : "shadow-[0_4px_14px_-10px_rgba(0,0,0,.35)]",
       )}
       onClick={() => ref.current?.focus()}
     >
@@ -95,7 +95,7 @@ export function ChatComposer({ status, onSend, onStop, placeholder }: Props) {
           busy
             ? "bg-foreground/10 text-foreground hover:bg-foreground/15"
             : canSend
-              ? "bg-primary text-primary-foreground shadow-[0_8px_24px_-10px_var(--brand)] hover:brightness-110"
+              ? "bg-primary text-primary-foreground hover:brightness-110"
               : "bg-foreground/8 text-muted-foreground/60",
         )}
       >

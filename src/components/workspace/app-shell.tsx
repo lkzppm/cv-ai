@@ -131,7 +131,7 @@ export function AppShell() {
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           style={{ width: chatWidth }}
-          className={cn("glass hidden shrink-0 overflow-hidden rounded-2xl lg:flex lg:flex-col", dragging && "select-none")}
+          className={cn("glass-clear hidden shrink-0 overflow-hidden rounded-2xl lg:flex lg:flex-col", dragging && "select-none")}
         >
           {hasHydrated && session && <AgentSidebar key={session.id} />}
         </motion.aside>
