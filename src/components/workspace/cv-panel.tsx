@@ -87,7 +87,7 @@ export function CvPanel() {
         layout
         className={cn(
           "print-area gradient-border relative rounded-3xl bg-card p-8 md:p-12",
-          "shadow-[0_30px_80px_-30px_rgba(0,0,0,.6),0_0_0_1px_var(--glass-border)]",
+          "shadow-[0_24px_60px_-28px_rgba(0,0,0,.5),0_0_0_1px_var(--glass-border)]",
         )}
       >
         <AnimatePresence mode="wait" initial={false}>
@@ -158,7 +158,7 @@ export function CvPanel() {
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={saveEdit}
-                className="flex items-center gap-1.5 rounded-full bg-[linear-gradient(135deg,var(--iris),var(--magenta))] px-4 py-2 text-sm font-medium text-white"
+                className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
               >
                 <CheckIcon className="size-4" /> Salvar
               </motion.button>

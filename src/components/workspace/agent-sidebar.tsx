@@ -102,9 +102,9 @@ function AgentSidebarInner() {
               initial={{ opacity: 0, x: 8 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 8 }}
-              className="ml-auto flex items-center gap-2 rounded-full border border-aqua/30 bg-aqua/10 px-2.5 py-0.5 text-[11px] text-aqua"
+              className="ml-auto flex items-center gap-2 rounded-full border border-primary/30 bg-accent px-2.5 py-0.5 text-[11px] text-accent-foreground"
             >
-              <span className="pulse-dot size-1.5 rounded-full bg-aqua" />
+              <span className="pulse-dot size-1.5 rounded-full bg-primary" />
               {runningSkill}
             </motion.span>
           ) : (
@@ -122,12 +122,12 @@ function AgentSidebarInner() {
             {messages.map((m) => (
               <motion.div
                 key={m.id}
-                initial={{ opacity: 0, y: 14, filter: "blur(4px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
               >
                 <Message from={m.role}>
-                  <MessageContent className={m.role === "user" ? "bg-[linear-gradient(135deg,var(--iris),var(--magenta))] text-white" : ""}>
+                  <MessageContent className={m.role === "user" ? "bg-primary text-primary-foreground" : ""}>
                     {m.parts.map((part, i) => {
                       switch (part.type) {
                         case "text":
@@ -198,7 +198,7 @@ function AgentSidebarInner() {
               status={status}
               onStop={stop}
               disabled={!busy && !controller.textInput.value.trim()}
-              className="rounded-full bg-[linear-gradient(135deg,var(--iris),var(--magenta))] text-white"
+              className="rounded-full"
             />
           </PromptInputFooter>
         </PromptInput>
@@ -232,7 +232,7 @@ function EmptyHero() {
             variants={fadeUp}
             className="group flex items-start gap-3 rounded-2xl border border-glass-border bg-background/40 p-3 transition-colors hover:border-primary/40"
           >
-            <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-[linear-gradient(135deg,var(--iris),var(--aqua))] text-white shadow-[0_8px_20px_-10px_var(--iris)] transition-transform group-hover:scale-110">
+            <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-accent text-primary ring-1 ring-primary/20 transition-transform group-hover:scale-110">
               <s.icon className="size-4" />
             </span>
             <div className="min-w-0">

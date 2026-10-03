@@ -21,7 +21,7 @@ export function SessionsRail() {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
           onClick={() => createSession()}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,var(--iris),var(--magenta)_70%)] px-3 py-2 text-sm font-medium text-white shadow-[0_10px_30px_-12px_var(--iris)]"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-[0_10px_30px_-12px_var(--brand)] hover:brightness-110"
         >
           <PlusIcon className="size-4" /> Nova sessão
         </motion.button>

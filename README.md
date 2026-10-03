@@ -3,7 +3,7 @@
 > Trabalho da disciplina de **Inteligência Artificial** · *Criação de Agente*
 > Enunciado: "Construa passo a passo a implementação de um agente que analise currículos e que use skills para esta tarefa. Mostre o código e os softwares a serem instalados e usados."
 
-Interface no estilo *Claude Design* voltada a currículos: o **CV atual fica no painel principal** (folha flutuante sobre um fluido WebGPU que reage ao mouse), e uma **sidebar** traz o chat com o agente, os resultados das skills e as propostas de alteração (com botão *Aplicar*). Não há botões de skill: **o agente decide quando invocar cada uma**. Cada **sessão** guarda um CV, seu histórico de versões e a conversa.
+Interface no estilo *Claude Design* voltada a currículos: o **CV atual fica no painel principal** (folha flutuante em vidro sobre uma aurora WebGPU discreta), e uma **sidebar** traz o chat com o agente, os resultados das skills e as propostas de alteração (com botão *Aplicar*). Não há botões de skill: **o agente decide quando invocar cada uma**. Cada **sessão** guarda um CV, seu histórico de versões e a conversa.
 
 ```
 ┌───────────── header ─────────────────────────────────────────────────────────┐
@@ -24,7 +24,7 @@ Interface no estilo *Claude Design* voltada a currículos: o **CV atual fica no 
 | LLM | **Groq API** (`openai/gpt-oss-120b`) via `@ai-sdk/groq` |
 | Agente | **Vercel AI SDK 7** — `ToolLoopAgent`, streaming para `useChat` |
 | UI | Tailwind v4 · shadcn/ui · **AI Elements** (componentes de chat da Vercel) |
-| Visual | **vgpu** (WebGPU): simulação de fluido interativa como fundo (exemplo oficial adaptado, shaders `.wgsl` tipados) + **motion** para as transições; fallback CSS |
+| Visual | **vgpu** (WebGPU): aurora lenta como fundo (shader `.wgsl` tipado com ruído da `@vgpu/wgsl-std`) + **motion** para as transições; fallback CSS |
 | Estado | zustand + localStorage (sessões) |
 | PDF | unpdf |
 
@@ -70,7 +70,6 @@ pnpm create next-app@latest cv-ai --ts --tailwind --eslint --app --src-dir --use
 cd cv-ai
 pnpm add ai @ai-sdk/react @ai-sdk/groq zod zustand react-markdown remark-gfm unpdf vgpu lucide-react radix-ui motion
 pnpm add -D @vgpu/wgsl @vgpu/wgsl-std @webgpu/types
-npx vgpu examples pull fluid --out ./fluid-example   # base do fundo interativo
 pnpm dlx shadcn@latest init --base radix --preset nova --template next --yes
 pnpm dlx shadcn@latest add button textarea input scroll-area badge separator tooltip tabs dialog progress
 pnpm dlx ai-elements@latest add conversation message prompt-input tool reasoning sources suggestion shimmer task

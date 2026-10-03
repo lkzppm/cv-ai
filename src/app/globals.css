@@ -5,9 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ------------------------------------------------------------------
-   CV Agent — paleta "Obsidian": fundo quase-preto violeta com tinta
-   íris (#8B7CFF), aqua (#2EE6A6) e magenta (#FF5CAA). Tema escuro é o
-   padrão; o claro é um papel lilás muito suave.
+   CV Agent — paleta "Azure": azul como única família de cor.
+   brand #4C8DFF (escuro) / #1F6FEB (claro), brand-soft (céu), brand-cool
+   (teal discreto). Tema escuro = navy profundo; claro = papel frio.
    ------------------------------------------------------------------ */
 @theme inline {
   --color-background: var(--background);
@@ -46,9 +46,9 @@
   --color-card: var(--card);
   --color-success: var(--success);
   --color-warning: var(--warning);
-  --color-iris: var(--iris);
-  --color-aqua: var(--aqua);
-  --color-magenta: var(--magenta);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-cool: var(--brand-cool);
   --color-glass: var(--glass);
   --color-glass-border: var(--glass-border);
   --radius-sm: calc(var(--radius) * 0.6);
@@ -63,88 +63,88 @@
 }
 
 :root {
-  --iris: #6a5ae0;
-  --aqua: #15b587;
-  --magenta: #e04a92;
+  --brand: #1f6feb;
+  --brand-soft: #7fb4ff;
+  --brand-cool: #1aa7b8;
 
-  --background: #f4f3fa;
-  --foreground: #16152a;
+  --background: #f3f6fb;
+  --foreground: #10213a;
   --card: #ffffff;
-  --card-foreground: #16152a;
+  --card-foreground: #10213a;
   --popover: #ffffff;
-  --popover-foreground: #16152a;
-  --primary: #6a5ae0;
+  --popover-foreground: #10213a;
+  --primary: #1f6feb;
   --primary-foreground: #ffffff;
-  --secondary: #ebe9f6;
-  --secondary-foreground: #2a2750;
-  --muted: #eeedf5;
-  --muted-foreground: #6b6985;
-  --accent: #efecff;
-  --accent-foreground: #4a3dc4;
-  --destructive: #e0405f;
-  --success: #15b587;
-  --warning: #e08f1a;
-  --border: #e2e0ee;
-  --input: #e2e0ee;
-  --ring: #6a5ae0;
-  --glass: rgba(255, 255, 255, 0.62);
-  --glass-border: rgba(22, 21, 42, 0.08);
-  --chart-1: #6a5ae0;
-  --chart-2: #15b587;
-  --chart-3: #e04a92;
-  --chart-4: #2aa9d8;
-  --chart-5: #a79cff;
+  --secondary: #e9f0fa;
+  --secondary-foreground: #1e3a66;
+  --muted: #edf2f8;
+  --muted-foreground: #5f708a;
+  --accent: #e6f0ff;
+  --accent-foreground: #174ea6;
+  --destructive: #d94a5a;
+  --success: #1a9e6a;
+  --warning: #d28a12;
+  --border: #dde6f1;
+  --input: #dde6f1;
+  --ring: #1f6feb;
+  --glass: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(16, 33, 58, 0.08);
+  --chart-1: #1f6feb;
+  --chart-2: #1aa7b8;
+  --chart-3: #7fb4ff;
+  --chart-4: #174ea6;
+  --chart-5: #b9d4ff;
   --radius: 0.875rem;
   --sidebar: rgba(255, 255, 255, 0.55);
-  --sidebar-foreground: #16152a;
-  --sidebar-primary: #6a5ae0;
+  --sidebar-foreground: #10213a;
+  --sidebar-primary: #1f6feb;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #efecff;
-  --sidebar-accent-foreground: #4a3dc4;
-  --sidebar-border: rgba(22, 21, 42, 0.08);
-  --sidebar-ring: #6a5ae0;
+  --sidebar-accent: #e6f0ff;
+  --sidebar-accent-foreground: #174ea6;
+  --sidebar-border: rgba(16, 33, 58, 0.08);
+  --sidebar-ring: #1f6feb;
 }
 
 .dark {
-  --iris: #8b7cff;
-  --aqua: #2ee6a6;
-  --magenta: #ff5caa;
+  --brand: #4c8dff;
+  --brand-soft: #9eccff;
+  --brand-cool: #54ccde;
 
-  --background: #08070d;
-  --foreground: #ecebf5;
-  --card: #100f18;
-  --card-foreground: #ecebf5;
-  --popover: #15131f;
-  --popover-foreground: #ecebf5;
-  --primary: #8b7cff;
-  --primary-foreground: #0b0a12;
-  --secondary: #1b1927;
-  --secondary-foreground: #d6d3ea;
-  --muted: #17161f;
-  --muted-foreground: #8e8ca3;
-  --accent: rgba(139, 124, 255, 0.14);
-  --accent-foreground: #c9c2ff;
-  --destructive: #ff5c7a;
-  --success: #2ee6a6;
+  --background: #0a1220;
+  --foreground: #e6edf7;
+  --card: #111c2e;
+  --card-foreground: #e6edf7;
+  --popover: #15223a;
+  --popover-foreground: #e6edf7;
+  --primary: #4c8dff;
+  --primary-foreground: #06101f;
+  --secondary: #1a2740;
+  --secondary-foreground: #cfdcf0;
+  --muted: #16223a;
+  --muted-foreground: #8ea0bb;
+  --accent: rgba(76, 141, 255, 0.14);
+  --accent-foreground: #bcd4ff;
+  --destructive: #ff6b7a;
+  --success: #3ddc97;
   --warning: #ffb454;
   --border: rgba(255, 255, 255, 0.08);
   --input: rgba(255, 255, 255, 0.1);
-  --ring: #8b7cff;
-  --glass: rgba(16, 15, 24, 0.55);
+  --ring: #4c8dff;
+  --glass: rgba(14, 24, 42, 0.55);
   --glass-border: rgba(255, 255, 255, 0.08);
-  --chart-1: #8b7cff;
-  --chart-2: #2ee6a6;
-  --chart-3: #ff5caa;
-  --chart-4: #4cc9f0;
-  --chart-5: #c9c2ff;
-  --sidebar: rgba(12, 11, 18, 0.55);
-  --sidebar-foreground: #ecebf5;
-  --sidebar-primary: #8b7cff;
-  --sidebar-primary-foreground: #0b0a12;
-  --sidebar-accent: rgba(139, 124, 255, 0.14);
-  --sidebar-accent-foreground: #c9c2ff;
+  --chart-1: #4c8dff;
+  --chart-2: #54ccde;
+  --chart-3: #9eccff;
+  --chart-4: #1f6feb;
+  --chart-5: #bcd4ff;
+  --sidebar: rgba(12, 20, 36, 0.55);
+  --sidebar-foreground: #e6edf7;
+  --sidebar-primary: #4c8dff;
+  --sidebar-primary-foreground: #06101f;
+  --sidebar-accent: rgba(76, 141, 255, 0.14);
+  --sidebar-accent-foreground: #bcd4ff;
   --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #8b7cff;
+  --sidebar-ring: #4c8dff;
 }
 
 @layer base {
@@ -163,7 +163,7 @@
     @apply font-sans;
   }
   ::selection {
-    background: color-mix(in oklab, var(--iris) 35%, transparent);
+    background: color-mix(in oklab, var(--brand) 30%, transparent);
   }
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-thumb { background: color-mix(in oklab, var(--foreground) 14%, transparent); border-radius: 999px; border: 3px solid transparent; background-clip: padding-box; }
@@ -178,7 +178,7 @@
 }
 
 @utility text-gradient {
-  background: linear-gradient(100deg, var(--iris), var(--magenta) 55%, var(--aqua));
+  background: linear-gradient(100deg, var(--brand), var(--brand-cool));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -186,8 +186,8 @@
 
 @utility ring-glow {
   box-shadow:
-    0 0 0 1px color-mix(in oklab, var(--iris) 35%, transparent),
-    0 0 40px -10px color-mix(in oklab, var(--iris) 55%, transparent);
+    0 0 0 1px color-mix(in oklab, var(--brand) 40%, transparent),
+    0 0 32px -12px color-mix(in oklab, var(--brand) 45%, transparent);
 }
 
 /* Borda gradiente (usa pseudo-elemento com mask) */
@@ -200,7 +200,7 @@
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, color-mix(in oklab, var(--iris) 70%, transparent), transparent 40%, transparent 60%, color-mix(in oklab, var(--aqua) 55%, transparent));
+  background: linear-gradient(135deg, color-mix(in oklab, var(--brand) 55%, transparent), transparent 45%, transparent 60%, color-mix(in oklab, var(--brand-cool) 40%, transparent));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
@@ -222,9 +222,9 @@
 }
 .ambient-fallback {
   background:
-    radial-gradient(38% 48% at 22% 30%, color-mix(in oklab, var(--iris) 60%, transparent), transparent 70%),
-    radial-gradient(34% 44% at 78% 62%, color-mix(in oklab, var(--aqua) 45%, transparent), transparent 70%),
-    radial-gradient(40% 36% at 55% 15%, color-mix(in oklab, var(--magenta) 40%, transparent), transparent 70%),
+    radial-gradient(38% 48% at 22% 30%, color-mix(in oklab, var(--brand) 45%, transparent), transparent 70%),
+    radial-gradient(34% 44% at 78% 62%, color-mix(in oklab, var(--brand-cool) 30%, transparent), transparent 70%),
+    radial-gradient(40% 36% at 55% 15%, color-mix(in oklab, var(--brand-soft) 30%, transparent), transparent 70%),
     var(--background);
   animation: ambient-drift 22s ease-in-out infinite;
 }
@@ -234,7 +234,7 @@
 
 /* Ponto pulsante (skill em execução) */
 @keyframes pulse-dot {
-  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--aqua) 60%, transparent); }
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--brand) 55%, transparent); }
   70% { box-shadow: 0 0 0 8px transparent; }
 }
 .pulse-dot { animation: pulse-dot 1.6s ease-out infinite; }
@@ -283,7 +283,7 @@
   width: 6px;
   height: 6px;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--iris), var(--aqua));
+  background: var(--primary);
 }
 .cv-doc p {
   @apply my-1.5;

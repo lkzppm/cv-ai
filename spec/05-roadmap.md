@@ -6,8 +6,8 @@
 - [x] Agente `ToolLoopAgent` com Groq, streaming para `useChat`
 - [x] Skills: `role_matcher` (browser_search em rodadas), `format_checker`, `cv_scorer`, `cv_editor`
 - [x] UI 3 colunas, sessões persistidas, CV editável, upload PDF (unpdf + conversão para Markdown), export .md / print
-- [x] Fundo WebGPU: fluido interativo do vgpu (`.wgsl` tipados) com fallback CSS; tema escuro padrão + claro
-- [x] Redesign v2 (2026-10-03): paleta Obsidian, painéis glass, toolbar em pílula, animações motion, skills sem botões
+- [x] Fundo WebGPU: aurora fBm (vgpu + `@vgpu/wgsl-std`, `.wgsl` tipado) com fallback CSS; tema escuro padrão + claro
+- [x] Redesign v2 → v3 (2026-10-03): painéis glass, toolbar em pílula, animações motion, skills sem botões; paleta final "Azure" (azul) e fundo calmo
 - [x] `pnpm build` passando
 - [ ] **Testar com uma chave Groq real** (fluxo end-to-end das 4 skills) — próximo passo obrigatório
 - [x] Lint e `tsc` sem erros (AI Elements gerados são ignorados pelo ESLint)
