@@ -63,6 +63,12 @@ Fundo temático e discreto: **folhas de currículo esboçadas** (contorno arredo
 - **Interação (v4.1):** cada folha calcula a distância do cursor ao seu centro (desfazendo deriva/parallax) e dobra o canto superior direito (dog-ear: canto cortado + aba espelhada pela diagonal `a + b = k`, linha da dobra e sombra), com `k` crescendo com a proximidade e uma respiração lenta. Folhas próximas ganham ~90% mais tinta. Texto some sob o corte e a aba.
 - Para ajustar a presença: `alpha` (opacidade), `h.x > 0.28` (densidade), `time * 0.006` (velocidade), `0.40 * near` (tamanho máximo da dobra).
 
+## Chat: markdown e atividade das skills (2026-10-03)
+
+- **Markdown das respostas** (`.chat-md` em `globals.css`, aplicado ao `MessageResponse`/Streamdown): `streamdown/styles.css` importado e `@source` dos pacotes Streamdown para o Tailwind gerar as classes; estilos por `data-streamdown="…"`: títulos e cabeçalhos de tabela em `--primary`, bullets como pontos azuis, numeração azul, tabelas dentro do wrapper com borda `glass-border`, inline code azul claro. Respiro de 0,65rem entre blocos e listas com `padding-left` para os marcadores não colarem na borda da bolha.
+- **Mensagem do usuário** sempre branca sobre o azul (`text-white` + regras `.is-user .chat-md`), nos dois temas.
+- **Skill carregada vs tool executada** (`skill-activity.tsx`): `SkillLoadedRow` (linha tracejada azul, ícone da skill, "instruções carregadas", expande para ler o SKILL.md) para `tool-load_skill`; `SkillToolHeader` (card sólido, tag TOOL, pílula de estado pt-BR: preparando / executando / concluída / erro) para as demais. O indicador flutuante diz "carregando skill X" ou "executando tool X".
+
 ## Referências de design
 - Claude Design (layout canvas + sidebar de chat)
 - vgpu examples: https://vgpu.sh/examples · stdlib WGSL: `@vgpu/wgsl-std` (noise, hash, color)

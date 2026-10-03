@@ -1,17 +1,17 @@
+import { SKILL_NAMES, type SkillContext } from "./context";
 import { createCvEditor } from "./cv_editor";
 import { createCvScorer } from "./cv_scorer";
 import { createFormatChecker } from "./format_checker";
+import { createLoadSkill } from "./load_skill";
 import { loadSkillDoc, renderSkillsForPrompt } from "./registry";
 import { createRoleMatcher } from "./role_matcher";
 
-export const SKILL_NAMES = ["role_matcher", "format_checker", "cv_scorer", "cv_editor"] as const;
-export type SkillName = (typeof SKILL_NAMES)[number];
+export { SKILL_NAMES, requireLoaded, type SkillContext, type SkillName } from "./context";
 
-export type SkillContext = { cv: string };
-
-/** Instancia as tools de todas as skills, fechando sobre o CV da sessão. */
+/** Instancia as tools de todas as skills (+ load_skill), fechando sobre o contexto da requisição. */
 export function createSkills(ctx: SkillContext) {
   return {
+    load_skill: createLoadSkill(ctx),
     role_matcher: createRoleMatcher(ctx),
     format_checker: createFormatChecker(ctx),
     cv_scorer: createCvScorer(ctx),

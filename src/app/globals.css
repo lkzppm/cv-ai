@@ -1,6 +1,12 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "streamdown/styles.css";
+@source "../../node_modules/streamdown/dist/*.js";
+@source "../../node_modules/@streamdown/code/dist/*.js";
+@source "../../node_modules/@streamdown/cjk/dist/*.js";
+@source "../../node_modules/@streamdown/math/dist/*.js";
+@source "../../node_modules/@streamdown/mermaid/dist/*.js";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -328,6 +334,122 @@
 }
 .cv-doc strong {
   @apply font-semibold;
+}
+
+/* Markdown das respostas do agente (Streamdown) — respiro, listas alinhadas e acentos no azul do tema */
+.chat-md {
+  @apply text-[13.5px] leading-relaxed text-foreground;
+  padding: 0.125rem 0.125rem 0.25rem;
+}
+.chat-md > * + * {
+  margin-top: 0.65rem;
+}
+.chat-md [data-streamdown^="heading-"] {
+  @apply font-semibold tracking-tight text-primary;
+  margin-top: 1.1rem;
+}
+.chat-md > [data-streamdown^="heading-"]:first-child {
+  margin-top: 0;
+}
+.chat-md [data-streamdown="heading-1"] { @apply text-base; }
+.chat-md [data-streamdown="heading-2"] { @apply text-[15px]; }
+.chat-md [data-streamdown="heading-3"],
+.chat-md [data-streamdown="heading-4"] { @apply text-[13.5px] uppercase tracking-[0.12em] text-[12px]; }
+.chat-md [data-streamdown="strong"] {
+  @apply font-semibold text-foreground;
+}
+.chat-md [data-streamdown="unordered-list"],
+.chat-md [data-streamdown="ordered-list"] {
+  margin: 0.4rem 0 0.4rem 0;
+  padding-left: 1.35rem;
+}
+.chat-md [data-streamdown="unordered-list"] {
+  list-style: none;
+}
+.chat-md [data-streamdown="unordered-list"] > [data-streamdown="list-item"] {
+  position: relative;
+}
+.chat-md [data-streamdown="unordered-list"] > [data-streamdown="list-item"]::before {
+  content: "";
+  position: absolute;
+  left: -1rem;
+  top: 0.66em;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--primary);
+}
+.chat-md [data-streamdown="ordered-list"] {
+  list-style: decimal;
+}
+.chat-md [data-streamdown="ordered-list"] > [data-streamdown="list-item"]::marker {
+  color: var(--primary);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.chat-md [data-streamdown="list-item"] + [data-streamdown="list-item"] {
+  margin-top: 0.3rem;
+}
+.chat-md [data-streamdown="list-item"] > [data-streamdown="unordered-list"],
+.chat-md [data-streamdown="list-item"] > [data-streamdown="ordered-list"] {
+  margin-top: 0.3rem;
+}
+.chat-md [data-streamdown="table-wrapper"] {
+  @apply rounded-xl border border-glass-border bg-background/30;
+  margin: 0.6rem 0;
+}
+.chat-md [data-streamdown="table"] {
+  font-size: 12.5px;
+  border-radius: 0;
+}
+.chat-md [data-streamdown="table-header"] {
+  background: color-mix(in oklab, var(--primary) 12%, transparent);
+}
+.chat-md [data-streamdown="table-header-cell"] {
+  @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-primary;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--glass-border);
+}
+.chat-md [data-streamdown="table-cell"] {
+  padding: 0.45rem 0.75rem;
+  border-top: 1px solid color-mix(in oklab, var(--glass-border) 70%, transparent);
+}
+.chat-md [data-streamdown="table-row"]:first-child [data-streamdown="table-cell"] {
+  border-top: 0;
+}
+.chat-md [data-streamdown="blockquote"] {
+  border-left: 2px solid var(--primary);
+  padding-left: 0.75rem;
+  color: var(--muted-foreground);
+}
+.chat-md [data-streamdown="inline-code"] {
+  @apply rounded-md bg-primary/10 px-1 py-0.5 font-mono text-[12px] text-primary;
+}
+.chat-md [data-streamdown="link"] {
+  @apply text-primary underline underline-offset-2;
+}
+.chat-md [data-streamdown="horizontal-rule"] {
+  border-color: var(--glass-border);
+  margin: 0.9rem 0;
+}
+.chat-md p {
+  margin: 0;
+}
+/* Mensagem do usuário: sempre branca sobre o azul, nos dois temas */
+.is-user .chat-md,
+.is-user .chat-md [data-streamdown^="heading-"],
+.is-user .chat-md [data-streamdown="strong"],
+.is-user .chat-md [data-streamdown="link"],
+.is-user .chat-md [data-streamdown="inline-code"] {
+  color: #fff;
+}
+.is-user .chat-md [data-streamdown="unordered-list"] > [data-streamdown="list-item"]::before,
+.is-user .chat-md [data-streamdown="ordered-list"] > [data-streamdown="list-item"]::marker {
+  background: #fff;
+  color: #fff;
+}
+.is-user .chat-md [data-streamdown="inline-code"] {
+  background: rgba(255, 255, 255, 0.18);
 }
 
 /* Transição de tema via View Transitions */

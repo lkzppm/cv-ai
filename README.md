@@ -37,7 +37,9 @@ Interface no estilo *Claude Design* voltada a currículos: o **CV atual fica no 
 | `cv_scorer` | Análise profunda com rubrica de 6 dimensões ponderadas → **nota 0–100**, pontos fortes/fracos e plano de melhoria |
 | `cv_editor` | Propõe o CV inteiro reescrito; o usuário pré-visualiza e aplica (com *desfazer*) |
 
-Cada skill é uma pasta com `SKILL.md` (conhecimento em linguagem natural, injetado no prompt) e `index.ts` (tool executável com schema `zod`).
+Cada skill é uma pasta com `SKILL.md` (conhecimento em linguagem natural) e `index.ts` (tool executável com schema `zod`).
+
+**Carregamento progressivo.** O system prompt lista só nome, descrição e "quando usar" de cada skill. Quando o agente decide usar uma, ele chama `load_skill({ names })`, que devolve o `SKILL.md` completo (regras, rubrica, como apresentar); só depois a tool da skill fica disponível (`prepareStep` → `activeTools`). No chat isso aparece como dois eventos distintos: **skill carregada** (linha tracejada com o documento) e **tool executada** (card com o resultado).
 
 ---
 

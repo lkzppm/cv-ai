@@ -18,24 +18,18 @@ export type SkillDoc = {
   /** Corpo do SKILL.md sem o frontmatter (usado pelas chamadas internas da skill). */
   instructions: string;
   /**
-   * Subconjunto do corpo que vai para o system prompt do agente: só o que ele
-   * precisa para decidir *quando* chamar e *como apresentar*. Seções internas
-   * (rubrica, padrões de referência, "como funciona") ficam fora para economizar
-   * tokens — o free tier da Groq tem 8k tokens/min.
+   * Só a seção "Quando usar" — é o que vai para o system prompt. O restante
+   * (regras, rubrica, como apresentar) entra via `load_skill` quando o agente
+   * decide usar a skill (carregamento progressivo; economiza tokens no free tier).
    */
   agentInstructions: string;
 };
 
-const INTERNAL_SECTION = /^(padr(ões|oes)|rubrica|faixas|como funciona)/i;
-
-/** Remove as seções `## ...` cujo título bate em INTERNAL_SECTION. */
+/** Mantém apenas as seções `## Quando usar…`. */
 export function agentFacing(body: string): string {
-  const parts = body.split(/^(?=## )/m);
-  return parts
-    .filter((p) => {
-      const title = /^## (.+)$/m.exec(p)?.[1]?.trim() ?? "";
-      return !INTERNAL_SECTION.test(title);
-    })
+  return body
+    .split(/^(?=## )/m)
+    .filter((p) => /^## quando usar/i.test(p.trim()))
     .join("")
     .trim();
 }

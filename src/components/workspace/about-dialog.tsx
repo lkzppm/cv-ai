@@ -110,7 +110,7 @@ function Overview() {
       </SectionTitle>
       <ol className="space-y-2">
         {[
-          ["Você fala, ele decide", "Não há botões de skill. O agente interpreta o pedido e escolhe qual ferramenta chamar, podendo encadear várias."],
+          ["Você fala, ele decide", "Não há botões de skill. O agente interpreta o pedido, carrega as instruções da skill (SKILL.md) e só então executa a tool — você vê os dois momentos no chat."],
           ["O CV é o contexto", "O documento do painel é enviado a cada mensagem; edições feitas por você valem na hora."],
           ["Nada muda sem você", "Propostas do cv_editor aparecem em um card com Pré-visualizar e Aplicar, e dá para desfazer."],
         ].map(([t, d], i) => (

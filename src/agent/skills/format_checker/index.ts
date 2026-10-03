@@ -2,6 +2,7 @@ import { generateObject, tool } from "ai";
 import { z } from "zod";
 import { skillModel } from "@/agent/models";
 import { hasSection, parseCv, type ParsedCv } from "@/lib/cv/parse";
+import { requireLoaded, type SkillContext } from "../context";
 import { loadSkillDoc } from "../registry";
 
 export const checkSchema = z.object({
@@ -97,7 +98,7 @@ function deterministicChecks(cv: ParsedCv): FormatCheck[] {
   return checks;
 }
 
-export function createFormatChecker(ctx: { cv: string }) {
+export function createFormatChecker(ctx: SkillContext) {
   const doc = loadSkillDoc("format_checker");
   return tool({
     description: doc.description,
@@ -108,6 +109,7 @@ export function createFormatChecker(ctx: { cv: string }) {
         .describe("Opcional: aspecto específico a verificar (ex.: 'ATS', 'tamanho', 'bullets')"),
     }),
     execute: async ({ focus }) => {
+      requireLoaded(ctx, "format_checker");
       if (!ctx.cv.trim()) throw new Error("O CV está vazio. Peça ao usuário para colar ou enviar o currículo.");
       const parsed = parseCv(ctx.cv);
       const deterministic = deterministicChecks(parsed);

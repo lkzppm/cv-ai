@@ -2,6 +2,7 @@ import { generateObject, tool } from "ai";
 import { z } from "zod";
 import { skillModel } from "@/agent/models";
 import { parseCv } from "@/lib/cv/parse";
+import { requireLoaded, type SkillContext } from "../context";
 import { loadSkillDoc } from "../registry";
 
 export const scoreSchema = z.object({
@@ -39,7 +40,7 @@ const WEIGHTS: Record<CvScore["dimensions"][number]["name"], number> = {
   Consistência: 10,
 };
 
-export function createCvScorer(ctx: { cv: string }) {
+export function createCvScorer(ctx: SkillContext) {
   const doc = loadSkillDoc("cv_scorer");
   return tool({
     description: doc.description,
@@ -48,6 +49,7 @@ export function createCvScorer(ctx: { cv: string }) {
       jobKeywords: z.array(z.string()).nullish().describe("Keywords vindas do role_matcher, se já executado"),
     }),
     execute: async ({ targetRole, jobKeywords }) => {
+      requireLoaded(ctx, "cv_scorer");
       if (!ctx.cv.trim()) throw new Error("O CV está vazio. Peça ao usuário para colar ou enviar o currículo.");
       const parsed = parseCv(ctx.cv);
 

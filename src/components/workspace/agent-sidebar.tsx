@@ -11,7 +11,8 @@ import { ChatComposer, type ChatComposerHandle } from "./chat-composer";
 import { EmptyHero } from "./empty-hero";
 import { parseCv } from "@/lib/cv/parse";
 import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-elements/reasoning";
-import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "@/components/ai-elements/tool";
+import { Tool, ToolContent, ToolInput, ToolOutput } from "@/components/ai-elements/tool";
+import { SkillLoadedRow, SkillToolHeader } from "./skill-activity";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { useActiveSession, useSessions } from "@/lib/store/sessions";
 import { ScoreCard } from "./tool-cards/score-card";
@@ -20,11 +21,11 @@ import { RoleMatchCard } from "./tool-cards/role-match-card";
 import { EditProposalCard } from "./tool-cards/edit-proposal-card";
 
 
-const SKILL_TITLES: Record<string, string> = {
-  "tool-role_matcher": "role_matcher · pesquisa da vaga",
-  "tool-format_checker": "format_checker · padrões de mercado",
-  "tool-cv_scorer": "cv_scorer · análise profunda",
-  "tool-cv_editor": "cv_editor · proposta de alteração",
+const SKILL_SUBTITLES: Record<string, string> = {
+  "tool-role_matcher": "pesquisa da vaga",
+  "tool-format_checker": "padrões de mercado",
+  "tool-cv_scorer": "análise profunda",
+  "tool-cv_editor": "proposta de alteração",
 };
 
 export function AgentSidebar() {
@@ -60,15 +61,15 @@ export function AgentSidebar() {
   }, [messages, status, session.id, setMessages]);
 
   const busy = status === "submitted" || status === "streaming";
-  const runningSkill = busy ? findRunningSkill(messages) : null;
+  const activity = busy ? findActivity(messages) : null;
 
   return (
     <div className="relative flex h-full min-h-0 flex-col">
       {/* indicador flutuante de skill em execução */}
       <AnimatePresence>
-        {runningSkill && (
+        {activity && (
           <motion.div
-            key={runningSkill}
+            key={`${activity.kind}-${activity.name}`}
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
@@ -76,7 +77,7 @@ export function AgentSidebar() {
           >
             <span className="glass flex items-center gap-2 rounded-full px-3 py-1 text-[11px] text-accent-foreground">
               <span className="pulse-dot size-1.5 rounded-full bg-primary" />
-              executando {runningSkill}
+              {activity.kind === "load" ? `carregando skill ${activity.name}` : `executando tool ${activity.name}`}
             </span>
           </motion.div>
         )}
@@ -97,20 +98,44 @@ export function AgentSidebar() {
                   <MessageContent
                     className={
                       m.role === "user"
-                        ? "group-[.is-user]:rounded-2xl group-[.is-user]:rounded-br-[3px] group-[.is-user]:bg-primary group-[.is-user]:text-primary-foreground"
+                        ? "group-[.is-user]:rounded-2xl group-[.is-user]:rounded-br-[3px] group-[.is-user]:bg-primary group-[.is-user]:text-white"
                         : "max-w-full rounded-2xl rounded-bl-[3px] border border-glass-border bg-background/30 px-4 py-3"
                     }
                   >
                     {m.parts.map((part, i) => {
                       switch (part.type) {
                         case "text":
-                          return <MessageResponse key={i}>{part.text}</MessageResponse>;
+                          return (
+                            <MessageResponse key={i} className="chat-md">
+                              {part.text}
+                            </MessageResponse>
+                          );
                         case "reasoning":
                           return (
                             <Reasoning key={i} isStreaming={part.state === "streaming"}>
                               <ReasoningTrigger />
                               <ReasoningContent>{part.text}</ReasoningContent>
                             </Reasoning>
+                          );
+                        case "tool-load_skill":
+                          return (
+                            <motion.div
+                              key={part.toolCallId}
+                              layout
+                              initial={{ opacity: 0, x: -6 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ type: "spring", stiffness: 300, damping: 26 }}
+                            >
+                              {part.state === "output-available" ? (
+                                <div className="space-y-1.5">
+                                  {part.output.skills.map((s) => (
+                                    <SkillLoadedRow key={s.name} name={s.name} state={part.state} alreadyLoaded={s.alreadyLoaded} description={s.description} instructions={s.instructions} />
+                                  ))}
+                                </div>
+                              ) : (
+                                <SkillLoadedRow name={part.input?.names?.join(", ")} state={part.state} />
+                              )}
+                            </motion.div>
                           );
                         case "tool-role_matcher":
                         case "tool-format_checker":
@@ -125,7 +150,7 @@ export function AgentSidebar() {
                               transition={{ type: "spring", stiffness: 300, damping: 26 }}
                             >
                               <Tool defaultOpen={part.state === "output-available" || part.state === "output-error"} className="gradient-border rounded-2xl">
-                                <ToolHeader type={part.type} state={part.state} title={SKILL_TITLES[part.type]} />
+                                <SkillToolHeader name={part.type.replace("tool-", "")} state={part.state} subtitle={SKILL_SUBTITLES[part.type]} />
                                 <ToolContent>
                                   {part.state === "input-streaming" && <Shimmer>Preparando a skill…</Shimmer>}
                                   {part.state === "input-available" && <Shimmer>{`Executando ${part.type.replace("tool-", "")}…`}</Shimmer>}
@@ -172,14 +197,16 @@ export function AgentSidebar() {
 
 type SkillPart = Extract<CvAgentUIMessage["parts"][number], { type: `tool-${string}` }>;
 
-function findRunningSkill(messages: CvAgentUIMessage[]): string | null {
+/** O que o agente está fazendo agora: carregando uma skill ou executando uma tool. */
+function findActivity(messages: CvAgentUIMessage[]): { kind: "load" | "tool"; name: string } | null {
   const last = messages[messages.length - 1];
   if (!last || last.role !== "assistant") return null;
   for (let i = last.parts.length - 1; i >= 0; i--) {
     const p = last.parts[i];
-    if (p.type.startsWith("tool-") && "state" in p && (p.state === "input-streaming" || p.state === "input-available")) {
-      return p.type.replace("tool-", "");
-    }
+    if (!p.type.startsWith("tool-") || !("state" in p)) continue;
+    if (p.state !== "input-streaming" && p.state !== "input-available") continue;
+    if (p.type === "tool-load_skill") return { kind: "load", name: p.input?.names?.join(", ") ?? "…" };
+    return { kind: "tool", name: p.type.replace("tool-", "") };
   }
   return null;
 }

@@ -3,7 +3,8 @@ import { createSkills } from "@/agent/skills";
 import { SAMPLE_CV } from "@/lib/cv/sample";
 
 const [name, json = "{}"] = process.argv.slice(2);
-const skills = createSkills({ cv: SAMPLE_CV }) as unknown as Record<string, { execute?: (i: unknown, o: unknown) => Promise<unknown> }>;
+// Skill isolada: já marcamos como carregada (o load_skill é papel do agente).
+const skills = createSkills({ cv: SAMPLE_CV, loaded: new Set(["role_matcher", "format_checker", "cv_scorer", "cv_editor"]) }) as unknown as Record<string, { execute?: (i: unknown, o: unknown) => Promise<unknown> }>;
 const skill = skills[name];
 if (!skill?.execute) throw new Error(`skill desconhecida: ${name}`);
 const t0 = Date.now();

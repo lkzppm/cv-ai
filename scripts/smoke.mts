@@ -12,7 +12,7 @@ const prompts: Record<string, string> = {
   edit: "Reescreva meu resumo profissional de forma mais impactante",
 };
 
-const agent = createCvAgent({ cv: SAMPLE_CV });
+const agent = createCvAgent({ cv: SAMPLE_CV, loaded: new Set() });
 const t0 = Date.now();
 const result = await agent.generate({
   messages: [{ role: "user", content: prompts[scenario] }],

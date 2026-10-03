@@ -1,5 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
+import { requireLoaded, type SkillContext } from "../context";
 import { loadSkillDoc } from "../registry";
 
 /**
@@ -7,7 +8,7 @@ import { loadSkillDoc } from "../registry";
  * A execução apenas valida e devolve a proposta; a UI mostra um card com
  * "Aplicar" e atualiza o painel principal + histórico de versões.
  */
-export function createCvEditor(ctx: { cv: string }) {
+export function createCvEditor(ctx: SkillContext) {
   const doc = loadSkillDoc("cv_editor");
   return tool({
     description: doc.description,
@@ -16,6 +17,7 @@ export function createCvEditor(ctx: { cv: string }) {
       summary: z.array(z.string()).min(1).max(6).describe("O que mudou, em bullets curtos"),
     }),
     execute: async ({ newCv, summary }) => {
+      requireLoaded(ctx, "cv_editor");
       const before = ctx.cv.split(/\s+/).filter(Boolean).length;
       const after = newCv.split(/\s+/).filter(Boolean).length;
       return {

@@ -21,7 +21,8 @@
 5. **Avaliação das skills**: conjunto de CVs de teste + notas esperadas; medir estabilidade do `cv_scorer` (repetir 5x e ver variância).
 6. **Skill `cover_letter`** e **skill `interview_prep`** (gera perguntas prováveis a partir da vaga).
 7. **Rate limiting** no `/api/chat` antes de publicar.
-8. **Latência no free tier**: cache do resultado do `format_checker` por hash do CV (evita recomputar quando o usuário só pede a nota em seguida) e/ou Dev Tier da Groq.
+8. **Reforçar o protocolo no 20b**: sem o gate de `activeTools`, o gpt-oss-20b às vezes chamava a tool sem carregar e, ao receber o erro, respondia em texto em vez de corrigir. O gate resolve; vale manter o teste `pnpm smoke edit` como regressão.
+9. **Latência no free tier**: cache do resultado do `format_checker` por hash do CV (evita recomputar quando o usuário só pede a nota em seguida) e/ou Dev Tier da Groq.
 
 ## Riscos conhecidos
 

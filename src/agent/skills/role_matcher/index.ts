@@ -2,6 +2,7 @@ import { generateText, tool } from "ai";
 import { z } from "zod";
 import { groq, searchModel } from "@/agent/models";
 import { fetchPageText } from "@/lib/web/fetch-page";
+import { requireLoaded, type SkillContext } from "../context";
 import { loadSkillDoc } from "../registry";
 
 export const roleMatchSchema = z.object({
@@ -52,7 +53,7 @@ async function searchRound(prompt: string) {
   return { text: result.text, sources };
 }
 
-export function createRoleMatcher(ctx: { cv: string }) {
+export function createRoleMatcher(ctx: SkillContext) {
   const doc = loadSkillDoc("role_matcher");
   return tool({
     description: doc.description,
@@ -64,6 +65,7 @@ export function createRoleMatcher(ctx: { cv: string }) {
         .describe("Cargo/empresa desejados quando não há link, ex.: 'Engenheiro de Dados Pleno em fintech'"),
     }),
     execute: async ({ jobUrls: urls, roleQuery }) => {
+      requireLoaded(ctx, "role_matcher");
       // gpt-oss envia `null` em campos opcionais; normalizamos aqui.
       const jobUrls = urls ?? [];
       if (jobUrls.length === 0 && !roleQuery) {

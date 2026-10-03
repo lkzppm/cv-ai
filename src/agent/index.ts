@@ -12,7 +12,11 @@ export function createCvAgent(ctx: SkillContext) {
     model: agentModel(),
     instructions: buildInstructions(ctx.cv),
     tools: createSkills(ctx),
-    stopWhen: stepCountIs(8),
+    // Carregamento progressivo de verdade: a cada passo só `load_skill` e as skills
+    // já carregadas ficam ativas. O modelo não consegue executar uma skill sem
+    // antes ler o SKILL.md dela — e a UI mostra os dois momentos.
+    prepareStep: () => ({ activeTools: ["load_skill", ...ctx.loaded] }),
+    stopWhen: stepCountIs(12),
     temperature: 0.3,
     providerOptions: isReasoningModel(AGENT_MODEL_ID)
       ? { groq: { reasoningFormat: "parsed", reasoningEffort: "low", parallelToolCalls: false } }
