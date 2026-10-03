@@ -22,7 +22,7 @@ export function AboutDialog() {
           <InfoIcon />
         </Button>
       </DialogTrigger>
-      <DialogContent className="glass max-w-lg rounded-3xl p-0 sm:max-w-xl">
+      <DialogContent className="glass-strong max-w-lg rounded-3xl p-0 sm:max-w-xl">
         <DialogHeader className="px-6 pt-6">
           <div className="flex items-center gap-3">
             <span className="grid size-10 place-items-center rounded-2xl bg-accent text-primary ring-1 ring-primary/25">

@@ -8,17 +8,7 @@ import { SKILLS_META } from "@/lib/skills-meta";
 import type { CvAgentUIMessage } from "@/agent";
 import { Conversation, ConversationContent, ConversationScrollButton } from "@/components/ai-elements/conversation";
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
-import {
-  PromptInput,
-  PromptInputBody,
-  PromptInputFooter,
-  PromptInputProvider,
-  PromptInputSubmit,
-  PromptInputTextarea,
-  PromptInputTools,
-  usePromptInputController,
-  type PromptInputMessage,
-} from "@/components/ai-elements/prompt-input";
+import { ChatComposer } from "./chat-composer";
 import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-elements/reasoning";
 import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "@/components/ai-elements/tool";
 import { Shimmer } from "@/components/ai-elements/shimmer";
@@ -37,17 +27,8 @@ const SKILL_TITLES: Record<string, string> = {
 };
 
 export function AgentSidebar() {
-  return (
-    <PromptInputProvider>
-      <AgentSidebarInner />
-    </PromptInputProvider>
-  );
-}
-
-function AgentSidebarInner() {
   const session = useActiveSession()!;
   const setMessages = useSessions((s) => s.setMessages);
-  const controller = usePromptInputController();
 
   // O CV é lido na hora do envio para refletir edições feitas no painel.
   const transport = useMemo(
@@ -71,13 +52,6 @@ function AgentSidebarInner() {
   useEffect(() => {
     if (status === "ready" || status === "error") setMessages(session.id, messages);
   }, [messages, status, session.id, setMessages]);
-
-  const onSubmit = (msg: PromptInputMessage) => {
-    const text = msg.text.trim();
-    if (!text) return;
-    sendMessage({ text });
-    controller.textInput.clear();
-  };
 
   const busy = status === "submitted" || status === "streaming";
   const runningSkill = busy ? findRunningSkill(messages) : null;
@@ -172,23 +146,12 @@ function AgentSidebarInner() {
       </Conversation>
 
       <div className="p-3">
-        <PromptInput
-          onSubmit={onSubmit}
-          className="rounded-2xl border-glass-border bg-background/60 shadow-none transition-shadow focus-within:ring-glow"
-        >
-          <PromptInputBody>
-            <PromptInputTextarea placeholder="Peça uma análise, cole o link de uma vaga ou diga o que mudar…" />
-          </PromptInputBody>
-          <PromptInputFooter>
-            <PromptInputTools />
-            <PromptInputSubmit
-              status={status}
-              onStop={stop}
-              disabled={!busy && !controller.textInput.value.trim()}
-              className="rounded-full"
-            />
-          </PromptInputFooter>
-        </PromptInput>
+        <ChatComposer
+          status={status}
+          onSend={(text) => sendMessage({ text })}
+          onStop={stop}
+          placeholder="Peça uma análise, cole o link de uma vaga ou diga o que mudar…"
+        />
       </div>
     </div>
   );
@@ -217,7 +180,7 @@ function EmptyHero() {
           <motion.div
             key={s.key}
             variants={fadeUp}
-            className="group flex items-start gap-3 rounded-2xl border border-glass-border bg-background/40 p-3 transition-colors hover:border-primary/40"
+            className="group flex items-start gap-3 rounded-2xl border border-glass-border bg-background/25 p-3 transition-colors hover:border-primary/40"
           >
             <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-accent text-primary ring-1 ring-primary/20 transition-transform group-hover:scale-110">
               <s.icon className="size-4" />

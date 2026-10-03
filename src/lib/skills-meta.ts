@@ -1,5 +1,8 @@
 import { SearchIcon, ListChecksIcon, GaugeIcon, Wand2Icon, type LucideIcon } from "lucide-react";
 
+/** Rótulo curto do modelo exibido na UI (o id real vem de GROQ_MODEL no servidor). */
+export const AGENT_MODEL_LABEL = "groq · gpt-oss-120b";
+
 /** Metadados das skills para a UI (hero da sidebar e diálogo "sobre o agente"). */
 export type SkillMeta = { key: string; icon: LucideIcon; title: string; desc: string; when: string };
 
