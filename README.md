@@ -1,36 +1,176 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CV Agent — agente de IA que analisa currículos usando *skills*
 
-## Getting Started
+> Trabalho da disciplina de **Inteligência Artificial** · *Criação de Agente*
+> Enunciado: "Construa passo a passo a implementação de um agente que analise currículos e que use skills para esta tarefa. Mostre o código e os softwares a serem instalados e usados."
 
-First, run the development server:
+Interface no estilo *Claude Design* voltada a currículos: o **CV atual fica no painel principal**, e uma **sidebar** traz o chat com o agente, as skills, os resultados e as propostas de alteração (com botão *Aplicar*). Cada **sessão** guarda um CV, seu histórico de versões e a conversa.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+┌───────────── header ─────────────────────────────────────────────────────────┐
+│ sessões │          CV atual (Markdown · editar · PDF · exportar)   │ Agente   │
+│         │                                                           │ chat +   │
+│         │   ┌──────── folha ────────┐                               │ skills + │
+│         │   │ # Nome · contato      │                               │ cards    │
+│         │   │ ## Experiência …      │                               │          │
+│         │   └───────────────────────┘                               │ [input]  │
+└───────────────────────────────────────────────────────────────────────────────┘
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Camada | Tecnologia |
+|---|---|
+| Front/Back | **Next.js 16.3** (App Router, Turbopack, React 19) + TypeScript |
+| LLM | **Groq API** (`openai/gpt-oss-120b`) via `@ai-sdk/groq` |
+| Agente | **Vercel AI SDK 7** — `ToolLoopAgent`, streaming para `useChat` |
+| UI | Tailwind v4 · shadcn/ui · **AI Elements** (componentes de chat da Vercel) |
+| Visual | **vgpu** (WebGPU) para o fundo animado nos azuis do LinkedIn, com fallback CSS |
+| Estado | zustand + localStorage (sessões) |
+| PDF | unpdf |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## As skills do agente
 
-## Learn More
+| Skill | O que faz |
+|---|---|
+| `role_matcher` | Recebe links de vagas (LinkedIn, Gupy…) ou um cargo-alvo, faz **rodadas de web search** (built-in `browser_search` da Groq) e devolve requisitos, keywords de ATS e o % de aderência do CV |
+| `format_checker` | Confere o CV contra padrões de mercado (Harvard/reverse-chronological, ATS, tamanho, verbos de ação, resultados quantificados) → checklist pass/warn/fail |
+| `cv_scorer` | Análise profunda com rubrica de 6 dimensões ponderadas → **nota 0–100**, pontos fortes/fracos e plano de melhoria |
+| `cv_editor` | Propõe o CV inteiro reescrito; o usuário pré-visualiza e aplica (com *desfazer*) |
 
-To learn more about Next.js, take a look at the following resources:
+Cada skill é uma pasta com `SKILL.md` (conhecimento em linguagem natural, injetado no prompt) e `index.ts` (tool executável com schema `zod`).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Passo a passo
 
-## Deploy on Vercel
+### 1. Softwares a instalar
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Software | Versão | Onde |
+|---|---|---|
+| Node.js | ≥ 20 (testado com 26) | https://nodejs.org |
+| pnpm | 11 | `npm i -g pnpm` |
+| Git | qualquer | https://git-scm.com |
+| Chave da API Groq | gratuita | https://console.groq.com/keys |
+| Navegador com WebGPU (opcional) | Chrome/Edge atuais | sem WebGPU o fundo usa CSS |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 2. Clonar e configurar
+
+```bash
+git clone https://github.com/lkzppm/cv-ai.git
+cd cv-ai
+pnpm install
+cp .env.example .env.local      # cole sua GROQ_API_KEY
+pnpm dev                        # http://localhost:3000
+```
+
+### 3. Como o projeto foi criado (reprodutível do zero)
+
+```bash
+pnpm create next-app@latest cv-ai --ts --tailwind --eslint --app --src-dir --use-pnpm --import-alias "@/*"
+cd cv-ai
+pnpm add ai @ai-sdk/react @ai-sdk/groq zod zustand react-markdown remark-gfm unpdf vgpu lucide-react radix-ui
+pnpm dlx shadcn@latest init --base radix --preset nova --template next --yes
+pnpm dlx shadcn@latest add button textarea input scroll-area badge separator tooltip tabs dialog progress
+pnpm dlx ai-elements@latest add conversation message prompt-input tool reasoning sources suggestion shimmer task
+```
+
+### 4. O agente (`src/agent/index.ts`)
+
+```ts
+import { ToolLoopAgent, stepCountIs } from "ai";
+
+export function createCvAgent(ctx: { cv: string }) {
+  return new ToolLoopAgent({
+    model: groq("openai/gpt-oss-120b"),
+    instructions: buildInstructions(ctx.cv), // persona + SKILL.md de cada skill + o CV
+    tools: createSkills(ctx),                // role_matcher, format_checker, cv_scorer, cv_editor
+    stopWhen: stepCountIs(8),
+    providerOptions: { groq: { reasoningFormat: "parsed", reasoningEffort: "low" } },
+  });
+}
+```
+
+A rota `src/app/api/chat/route.ts` faz o streaming:
+
+```ts
+const agent = createCvAgent({ cv });
+const result = await agent.stream({ messages: await convertToModelMessages(messages) });
+return createUIMessageStreamResponse({ stream: toUIMessageStream({ stream: result.stream, sendReasoning: true }) });
+```
+
+### 5. Uma skill por dentro (`src/agent/skills/cv_scorer/index.ts`, resumido)
+
+```ts
+export function createCvScorer(ctx: { cv: string }) {
+  const doc = loadSkillDoc("cv_scorer"); // lê SKILL.md
+  return tool({
+    description: doc.description,
+    inputSchema: z.object({ targetRole: z.string().optional() }),
+    execute: async ({ targetRole }) => {
+      const { object } = await generateObject({
+        model: agentModel(),
+        schema: scoreSchema,                 // 6 dimensões, pesos, plano de melhoria
+        prompt: `${doc.instructions}\n...\n${ctx.cv}`,
+      });
+      return { ...object, overall: weightedAverage(object.dimensions) };
+    },
+  });
+}
+```
+
+E o `SKILL.md` correspondente descreve *quando usar*, a *rubrica* e *como apresentar* o resultado — o modelo lê isso no system prompt.
+
+### 6. A interface (`src/components/workspace/agent-sidebar.tsx`, resumido)
+
+```tsx
+const { messages, sendMessage, status } = useChat<CvAgentUIMessage>({
+  transport: new DefaultChatTransport({ api: "/api/chat", body: () => ({ cv: currentCv() }) }),
+});
+
+{m.parts.map((part) => {
+  switch (part.type) {
+    case "text":            return <MessageResponse>{part.text}</MessageResponse>;
+    case "reasoning":       return <Reasoning isStreaming={part.state === "streaming"}>…</Reasoning>;
+    case "tool-cv_scorer":  return <Tool><ToolHeader …/><ToolContent><ScoreCard output={part.output} /></ToolContent></Tool>;
+    // … format_checker, role_matcher, cv_editor
+  }
+})}
+```
+
+### 7. Usar
+
+1. Abra http://localhost:3000 — uma sessão com um CV de exemplo é criada.
+2. Cole o seu CV em **Editar** ou envie um **PDF** (é convertido para Markdown).
+3. Na sidebar, clique em **Verificar formato**, **Dar nota ao CV** ou cole um link de vaga em **Comparar com vaga**.
+4. Peça "aplique as melhorias" → o `cv_editor` gera uma proposta → **Aplicar** → **Desfazer** se quiser.
+5. Exporte em `.md` ou imprima (salvar como PDF).
+
+## Estrutura
+
+```
+src/agent/            agente, prompts, modelos e skills/<nome>/{SKILL.md,index.ts}
+src/app/api/chat      streaming do agente
+src/app/api/parse-cv  PDF → texto → Markdown
+src/components/       ai-elements (gerado) · ui (shadcn) · ambient (vgpu) · workspace (layout, painel, sidebar, cards)
+src/lib/              parser de CV, store de sessões, fetch de páginas
+spec/                 base de conhecimento do projeto (leia primeiro)
+```
+
+## Variáveis de ambiente
+
+| Nome | Padrão | Descrição |
+|---|---|---|
+| `GROQ_API_KEY` | — | obrigatória |
+| `GROQ_MODEL` | `openai/gpt-oss-120b` | modelo do agente (precisa de tool calling) |
+| `GROQ_SEARCH_MODEL` | `openai/gpt-oss-120b` | modelo com `browser_search` para o `role_matcher` |
+
+## Referências
+
+- AI SDK — https://ai-sdk.dev/docs · AI Elements — https://elements.ai-sdk.dev
+- Groq — https://console.groq.com/docs/models · built-in tools — https://console.groq.com/docs/tool-use/built-in-tools
+- vgpu — https://github.com/vercel-labs/vgpu
+- Next.js 16 — docs locais em `node_modules/next/dist/docs/`
+
+## Licença
+
+MIT

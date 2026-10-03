@@ -1,26 +1,206 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
+/* ------------------------------------------------------------------
+   Tokens de tema — paleta "LinkedIn blue"
+   #0A66C2 (primary) · #004182 (navy) · #378FE9 · #70B5F9 · #E8F3FF
+   ------------------------------------------------------------------ */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-geist-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-sky: var(--brand-sky);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --background: #f3f6fa;
+  --foreground: #0b1f33;
+  --card: #ffffff;
+  --card-foreground: #0b1f33;
+  --popover: #ffffff;
+  --popover-foreground: #0b1f33;
+  --primary: #0a66c2;
+  --primary-foreground: #ffffff;
+  --secondary: #e8f0f8;
+  --secondary-foreground: #004182;
+  --muted: #eef3f8;
+  --muted-foreground: #56687a;
+  --accent: #e8f3ff;
+  --accent-foreground: #004182;
+  --destructive: #c4302b;
+  --success: #1f8a4c;
+  --warning: #c77700;
+  --border: #d9e4ef;
+  --input: #d9e4ef;
+  --ring: #0a66c2;
+  --brand-navy: #004182;
+  --brand-sky: #70b5f9;
+  --chart-1: #0a66c2;
+  --chart-2: #378fe9;
+  --chart-3: #70b5f9;
+  --chart-4: #004182;
+  --chart-5: #a8ccf0;
+  --radius: 0.75rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0b1f33;
+  --sidebar-primary: #0a66c2;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e8f3ff;
+  --sidebar-accent-foreground: #004182;
+  --sidebar-border: #d9e4ef;
+  --sidebar-ring: #0a66c2;
+}
+
+.dark {
+  --background: #0a1726;
+  --foreground: #e7f0f9;
+  --card: #10223a;
+  --card-foreground: #e7f0f9;
+  --popover: #10223a;
+  --popover-foreground: #e7f0f9;
+  --primary: #378fe9;
+  --primary-foreground: #06162a;
+  --secondary: #16304b;
+  --secondary-foreground: #cfe3fb;
+  --muted: #142a42;
+  --muted-foreground: #8fa6bc;
+  --accent: #16314d;
+  --accent-foreground: #cfe3fb;
+  --destructive: #ef6a65;
+  --success: #4cc27a;
+  --warning: #f2a93b;
+  --border: #1f3a55;
+  --input: #1f3a55;
+  --ring: #378fe9;
+  --brand-navy: #70b5f9;
+  --brand-sky: #378fe9;
+  --chart-1: #378fe9;
+  --chart-2: #70b5f9;
+  --chart-3: #a8ccf0;
+  --chart-4: #0a66c2;
+  --chart-5: #004182;
+  --sidebar: #0e2033;
+  --sidebar-foreground: #e7f0f9;
+  --sidebar-primary: #378fe9;
+  --sidebar-primary-foreground: #06162a;
+  --sidebar-accent: #16314d;
+  --sidebar-accent-foreground: #cfe3fb;
+  --sidebar-border: #1f3a55;
+  --sidebar-ring: #378fe9;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Tipografia do currículo renderizado (painel principal) */
+.cv-doc {
+  @apply text-[15px] leading-relaxed text-foreground;
+}
+.cv-doc h1 {
+  @apply text-3xl font-semibold tracking-tight text-brand-navy mb-1;
+}
+.cv-doc h1 + p {
+  @apply text-sm text-muted-foreground mb-5;
+}
+.cv-doc h2 {
+  @apply mt-7 mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary border-b border-border pb-1;
+}
+.cv-doc h3 {
+  @apply mt-4 text-base font-semibold;
+}
+.cv-doc h3 + p em {
+  @apply text-sm text-muted-foreground not-italic;
+}
+.cv-doc ul {
+  @apply list-disc pl-5 mt-1.5 space-y-1;
+}
+.cv-doc p {
+  @apply my-1.5;
+}
+.cv-doc a {
+  @apply text-primary underline-offset-2 hover:underline;
+}
+.cv-doc strong {
+  @apply font-semibold text-foreground;
+}
+
+/* Fallback animado quando WebGPU não está disponível */
+@keyframes ambient-drift {
+  0% { transform: translate3d(-4%, -2%, 0) scale(1); }
+  50% { transform: translate3d(4%, 3%, 0) scale(1.08); }
+  100% { transform: translate3d(-4%, -2%, 0) scale(1); }
+}
+.ambient-fallback {
+  background:
+    radial-gradient(40% 50% at 25% 35%, color-mix(in oklab, var(--brand-sky) 55%, transparent), transparent 70%),
+    radial-gradient(35% 45% at 75% 60%, color-mix(in oklab, var(--primary) 35%, transparent), transparent 70%),
+    radial-gradient(45% 40% at 50% 20%, color-mix(in oklab, var(--brand-navy) 18%, transparent), transparent 70%),
+    var(--background);
+  animation: ambient-drift 18s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient-fallback { animation: none; }
+}
+
+@media print {
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+  .print-area { position: absolute; inset: 0; padding: 0 !important; box-shadow: none !important; border: 0 !important; }
 }

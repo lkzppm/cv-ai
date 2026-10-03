@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Gerados pelo CLI do AI Elements (não editar à mão)
+    "src/components/ai-elements/**",
   ]),
 ]);
 
