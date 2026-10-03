@@ -12,7 +12,7 @@
 │         │  └──────────────────────────────────────────────┘  │ prompt input   │
 │         │     ( toolbar em pílula flutuante: ⬆ ✎ ↶ | ⬇ 🖨 )   │ (440–500px)    │
 └──────────────────────────────────────────────────────────────────────────────┘
-          fundo: vgpu — aurora lenta (WebGPU) · fallback CSS
+          fundo: vgpu — folhas de CV esboçadas (WebGPU) · fallback CSS
 ```
 
 - `< lg`: a sidebar do agente fica oculta (TODO: drawer). O rail esquerdo colapsa pelo botão do header.
@@ -27,7 +27,7 @@ Uma única família de cor (azul), para não competir com o conteúdo do CV. Esc
 | `--brand` / `--primary` | `#4C8DFF` | `#1F6FEB` | ação principal, títulos de seção do CV, pill de skill em execução |
 | `--brand-soft` | `#9ECCFF` | `#7FB4FF` | 3ª cor do fundo, gráficos |
 | `--brand-cool` | `#54CCDE` | `#1AA7B8` | fim dos gradientes discretos (`text-gradient`, borda do card) |
-| `--background` | `#0A1220` | `#F3F6FB` | fundo (atrás da aurora) |
+| `--background` | `#0A1220` | `#F3F6FB` | fundo (atrás das folhas) |
 | `--card` | `#111C2E` | `#FFFFFF` | folha do CV |
 | `--success` / `--warning` / `--destructive` | `#3DDC97` / `#FFB454` / `#FF6B7A` | | status |
 
@@ -39,7 +39,7 @@ Regras de tom: botões e balão do usuário são `bg-primary` sólidos (sem grad
 - Troca de sessão: `AnimatePresence mode="wait"` no painel do CV (fade + y + scale).
 - Mensagens: fade + deslocamento curto; cards de skill com spring; toolbar flutuante em pílula com `whileHover/whileTap`.
 - Estado vazio da sidebar: hero com stagger das 4 capacidades (não são botões — o agente decide quando chamar as skills).
-- `prefers-reduced-motion`: a aurora não inicia e o fallback não anima.
+- `prefers-reduced-motion`: o fundo WebGPU não inicia; o fallback CSS é estático.
 
 ## Componentes
 
@@ -49,15 +49,15 @@ Regras de tom: botões e balão do usuário são `bg-primary` sólidos (sem grad
 - **shadcn/ui**: button, textarea, input, scroll-area, badge, separator, tooltip, tabs, dialog, progress (+ deps puxadas pelo AI Elements).
 - **Tool cards** (`components/workspace/tool-cards/`): um por skill, recebem `part.output` tipado.
 
-## vgpu — aurora (fundo)
+## vgpu — "papers" (fundo) — v4, 2026-10-03
 
-Um único efeito fullscreen, de propósito discreto (substituiu o fluido da v2, que foi considerado agressivo demais):
+Fundo temático e discreto: **folhas de currículo esboçadas** (contorno arredondado, barra do "nome", subtítulo e 5 linhas de texto) numa grade esparsa com colunas desencontradas, derivando para cima muito devagar, com balanço sutil por folha, parallax de ~1% e um foco de luz suave que acompanha o cursor. Substituiu a aurora (v3), considerada ainda chamativa e sem relação com o tema.
 
-- `components/ambient/aurora/aurora.wgsl`: `fbmSimplex2d` importado da stdlib (`@vgpu/wgsl-std/noise/simplex`) com *domain warp* em duas etapas, muito lento (`time * 0.035`). Três bandas azuis (brand/teal/sky) com intensidade 0.22 no claro e 0.42 no escuro, vinheta e brilho de topo.
-- `aurora.ts`: `init → surface → effect → frameLoop`; uniforms `time`, `dark`, `pointer` (parallax de ~1.5% com easing) e `texel`. Pausa com a aba oculta, DPR ≤ 1.5, `onError` → fallback CSS.
-- `ambient-canvas.tsx`: import dinâmico, detecção de `navigator.gpu` com `useSyncExternalStore`, grão SVG a 5%.
-- Loader `.wgsl` continua configurado em `next.config.ts` (Turbopack + webpack); tipos em `src/wgsl-env.d.ts`.
-- Validar: `npx vgpu check src/components/ambient/aurora/aurora.wgsl`.
+- `components/ambient/papers/papers.wgsl`: SDFs de caixa arredondada com antialiasing por `fwidth`; `hash2` da stdlib (`@vgpu/wgsl-std/hash`) decide quais células têm folha (72%), tamanho, jitter e comprimento das linhas. Opacidade da tinta ≈ 7,5% (claro) / 8,5% (escuro); vinheta esmaece perto das bordas para não disputar com os painéis glass.
+- `papers.ts`: `init → surface → effect(compile({ colors: [surface.format] })) → frameLoop`; uniforms `time`, `dark`, `pointer` (easing 0.05) e `texel`. Pausa com a aba oculta.
+- Fallback CSS (`.ambient-fallback`): linhas finas repetidas em grade + brilho no topo, estático, com máscara radial.
+- Validar: `npx vgpu check src/components/ambient/papers/papers.wgsl`.
+- Para ajustar a presença: `alpha` (opacidade), `h.x > 0.28` (densidade), `time * 0.006` (velocidade).
 
 ## Referências de design
 - Claude Design (layout canvas + sidebar de chat)

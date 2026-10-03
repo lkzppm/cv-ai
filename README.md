@@ -3,7 +3,7 @@
 > Trabalho da disciplina de **Inteligência Artificial** · *Criação de Agente*
 > Enunciado: "Construa passo a passo a implementação de um agente que analise currículos e que use skills para esta tarefa. Mostre o código e os softwares a serem instalados e usados."
 
-Interface no estilo *Claude Design* voltada a currículos: o **CV atual fica no painel principal** (folha flutuante em vidro sobre uma aurora WebGPU discreta), e uma **sidebar** traz o chat com o agente, os resultados das skills e as propostas de alteração (com botão *Aplicar*). Não há botões de skill: **o agente decide quando invocar cada uma**. Cada **sessão** guarda um CV, seu histórico de versões e a conversa.
+Interface no estilo *Claude Design* voltada a currículos: o **CV atual fica no painel principal** (folha flutuante em vidro sobre um fundo WebGPU discreto de currículos esboçados), e uma **sidebar** traz o chat com o agente, os resultados das skills e as propostas de alteração (com botão *Aplicar*). Não há botões de skill: **o agente decide quando invocar cada uma**. Cada **sessão** guarda um CV, seu histórico de versões e a conversa.
 
 ```
 ┌───────────── header ─────────────────────────────────────────────────────────┐
@@ -24,7 +24,7 @@ Interface no estilo *Claude Design* voltada a currículos: o **CV atual fica no 
 | LLM | **Groq API** (`openai/gpt-oss-120b`) via `@ai-sdk/groq` |
 | Agente | **Vercel AI SDK 7** — `ToolLoopAgent`, streaming para `useChat` |
 | UI | Tailwind v4 · shadcn/ui · **AI Elements** (componentes de chat da Vercel) |
-| Visual | **vgpu** (WebGPU): aurora lenta como fundo (shader `.wgsl` tipado com ruído da `@vgpu/wgsl-std`) + **motion** para as transições; fallback CSS |
+| Visual | **vgpu** (WebGPU): fundo com folhas de currículo esboçadas (shader `.wgsl` tipado, SDFs + `@vgpu/wgsl-std`) + **motion** para as transições; fallback CSS |
 | Estado | zustand + localStorage (sessões) |
 | PDF | unpdf |
 

@@ -8,7 +8,7 @@
 | LLM | Groq API via `@ai-sdk/groq` | Exigência do trabalho; inferência muito rápida; `openai/gpt-oss-120b` tem tool calling + reasoning + `browser_search` nativo |
 | Agente | Vercel AI SDK 7 (`ai`, `@ai-sdk/react`) | `ToolLoopAgent`, streaming de UI messages, tipagem das tools de ponta a ponta |
 | UI | Tailwind v4 + shadcn/ui (radix) + **AI Elements** | Componentes prontos de chat (Conversation, Message, PromptInput, Tool, Reasoning) |
-| Efeito visual | **vgpu** (WebGPU, vercel-labs) + **motion** | Fundo "aurora" com ruído fBm da stdlib WGSL; fallback CSS. Transições de UI com motion |
+| Efeito visual | **vgpu** (WebGPU, vercel-labs) + **motion** | Fundo "papers": folhas de CV esboçadas em SDF, discreto e temático; fallback CSS. Transições de UI com motion |
 | Estado | zustand + persist (localStorage) | Sessões/CV/mensagens sem backend |
 | PDF | unpdf | Extrai texto de PDF em Node/serverless |
 
@@ -53,7 +53,7 @@ src/
   components/
     ai-elements/   gerados pelo CLI do AI Elements (não editar à mão; re-adicionar com -o)
     ui/            shadcn (radix)
-    ambient/       vgpu: aurora/ (aurora.wgsl + aurora.ts) e ambient-canvas.tsx (fallback CSS)
+    ambient/       vgpu: papers/ (papers.wgsl + papers.ts) e ambient-canvas.tsx (fallback CSS)
     workspace/     app-shell, sessions-rail, cv-panel, cv-markdown, agent-sidebar, tool-cards/*
   lib/
     cv/parse.ts    parser heurístico (seções, bullets, contato, métricas)
@@ -70,5 +70,5 @@ spec/              esta pasta
 - **2026-10-03 — `cv_editor` recebe o CV inteiro como *input* da tool** (o modelo escreve o Markdown). Mais simples que diffs e permite preview/aplicar/desfazer no cliente.
 - **SKILL.md lido do disco** (`process.cwd()/src/agent/skills`). `next.config.ts` inclui esses arquivos no tracing do `/api/chat` para deploy serverless.
 - **2026-10-03 — sem botões de skill na UI.** O agente decide quando invocar cada skill (prompt reforça: pedidos amplos → format_checker + cv_scorer; link → role_matcher; "mude/reescreva" → cv_editor). Mantém o foco do trabalho em *agente que usa skills*, não em formulários.
-- **2026-10-03 — paleta "Azure"** (azul único, dark por padrão, painéis glass). A v2 "Obsidian" (íris/aqua/magenta) com fundo de fluido foi revertida por ser agressiva demais; o fundo agora é uma aurora fBm lenta (`.wgsl` tipado com `@vgpu/wgsl-std`).
+- **2026-10-03 — paleta "Azure"** (azul único, dark por padrão, painéis glass). A v2 "Obsidian" (íris/aqua/magenta) com fundo de fluido foi revertida por ser agressiva demais; o fundo passou por aurora fBm (v3) e virou "papers" (v4): folhas de currículo esboçadas, discretas e ligadas ao tema.
 - **Sem banco de dados**: trabalho acadêmico; `localStorage` basta. Migrar para Postgres/Drizzle está no roadmap.

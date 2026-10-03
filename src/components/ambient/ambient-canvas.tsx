@@ -5,9 +5,9 @@ import { useSessions } from "@/lib/store/sessions";
 import { cn } from "@/lib/utils";
 
 /**
- * Fundo da aplicação: aurora lenta em WebGPU (vgpu + ruído fBm da stdlib) com
- * parallax sutil do cursor. Sem WebGPU (ou se a inicialização falhar), cai
- * para um gradiente CSS animado com a mesma paleta.
+ * Fundo da aplicação: folhas de currículo esboçadas (WebGPU via vgpu) que
+ * derivam devagar, com parallax e foco de luz no cursor. Sem WebGPU (ou se a
+ * inicialização falhar), cai para um padrão CSS estático com a mesma ideia.
  */
 export function AmbientCanvas({ className }: { className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -28,9 +28,9 @@ export function AmbientCanvas({ className }: { className?: string }) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let dispose: (() => void) | undefined;
     let cancelled = false;
-    import("./aurora/aurora").then(({ startAurora }) => {
+    import("./papers/papers").then(({ startPapers }) => {
       if (cancelled) return;
-      dispose = startAurora({
+      dispose = startPapers({
         canvas,
         getDark: () => themeRef.current === "dark",
         onError: (err) => {
@@ -53,7 +53,7 @@ export function AmbientCanvas({ className }: { className?: string }) {
         <canvas ref={ref} className="block h-full w-full" />
       )}
       {/* grão sutil por cima para dar textura */}
-      <div className="grain absolute inset-0 opacity-[0.05] mix-blend-overlay" />
+      <div className="grain absolute inset-0 opacity-[0.04] mix-blend-overlay" />
     </div>
   );
 }

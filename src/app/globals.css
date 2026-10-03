@@ -214,22 +214,16 @@
   background-size: 160px 160px;
 }
 
-/* Fallback animado quando WebGPU não está disponível */
-@keyframes ambient-drift {
-  0% { transform: translate3d(-4%, -2%, 0) rotate(0deg) scale(1); }
-  50% { transform: translate3d(4%, 3%, 0) rotate(3deg) scale(1.08); }
-  100% { transform: translate3d(-4%, -2%, 0) rotate(0deg) scale(1); }
-}
+/* Fallback quando WebGPU não está disponível: "folhas" sugeridas por linhas
+   finas em grade esparsa + brilho suave no topo. Estático de propósito. */
 .ambient-fallback {
   background:
-    radial-gradient(38% 48% at 22% 30%, color-mix(in oklab, var(--brand) 45%, transparent), transparent 70%),
-    radial-gradient(34% 44% at 78% 62%, color-mix(in oklab, var(--brand-cool) 30%, transparent), transparent 70%),
-    radial-gradient(40% 36% at 55% 15%, color-mix(in oklab, var(--brand-soft) 30%, transparent), transparent 70%),
+    radial-gradient(60% 40% at 50% 0%, color-mix(in oklab, var(--brand) 14%, transparent), transparent 70%),
+    repeating-linear-gradient(0deg, transparent 0 22px, color-mix(in oklab, var(--brand-soft) 7%, transparent) 22px 23px),
+    repeating-linear-gradient(90deg, transparent 0 220px, color-mix(in oklab, var(--brand-soft) 6%, transparent) 220px 221px),
     var(--background);
-  animation: ambient-drift 22s ease-in-out infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .ambient-fallback { animation: none; }
+  -webkit-mask-image: radial-gradient(80% 80% at 50% 50%, #000 40%, transparent 100%);
+  mask-image: radial-gradient(80% 80% at 50% 50%, #000 40%, transparent 100%);
 }
 
 /* Ponto pulsante (skill em execução) */

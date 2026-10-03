@@ -1,24 +1,22 @@
 import { clock, effect, frameLoop, init, surface } from "vgpu";
 import type { FrameLoopHandle } from "vgpu";
-import auroraShader from "./aurora.wgsl";
+import papersShader from "./papers.wgsl";
 
-export interface AuroraOptions {
+export interface PapersOptions {
   canvas: HTMLCanvasElement;
   getDark: () => boolean;
   onError?: (error: unknown) => void;
 }
 
 /**
- * Fundo "aurora": um único efeito fullscreen (vgpu) com ruído fBm da stdlib
- * (@vgpu/wgsl-std) e parallax sutil do cursor. Sem compute, sem ping-pong —
- * leve o bastante para rodar o tempo todo atrás da interface.
+ * Fundo "papers": folhas de currículo esboçadas derivando devagar, com foco
+ * de luz no cursor. Um único efeito fullscreen (vgpu), sem compute.
  */
-export function startAurora(options: AuroraOptions): () => void {
+export function startPapers(options: PapersOptions): () => void {
   let disposed = false;
   let loop: FrameLoopHandle | undefined;
   let gpu: Awaited<ReturnType<typeof init>> | undefined;
 
-  // cursor normalizado (0..1), com easing para o parallax não "pular"
   const target = { x: 0.5, y: 0.5 };
   const eased = { x: 0.5, y: 0.5 };
   const onMove = (e: PointerEvent) => {
@@ -32,9 +30,9 @@ export function startAurora(options: AuroraOptions): () => void {
       gpu = await init();
       if (disposed) return gpu.dispose();
 
-      const canvasSurface = surface(gpu, options.canvas, { dpr: [1, 1.5] });
-      const fx = effect(gpu, auroraShader, {
-        label: "aurora",
+      const canvasSurface = surface(gpu, options.canvas, { dpr: [1, 2] });
+      const fx = effect(gpu, papersShader, {
+        label: "papers",
         set: {
           params: {
             time: 0,
@@ -53,8 +51,8 @@ export function startAurora(options: AuroraOptions): () => void {
       const time = clock(gpu);
       loop = frameLoop(gpu, (frame) => {
         if (document.hidden) return;
-        eased.x += (target.x - eased.x) * 0.04;
-        eased.y += (target.y - eased.y) * 0.04;
+        eased.x += (target.x - eased.x) * 0.05;
+        eased.y += (target.y - eased.y) * 0.05;
         fx.set({ params: { time: time.time, dark: options.getDark() ? 1 : 0, pointer: [eased.x, eased.y] } });
         frame.pass(canvasSurface, fx);
       });
