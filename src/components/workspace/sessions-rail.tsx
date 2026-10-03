@@ -58,7 +58,12 @@ export function SessionsRail() {
                     {active && (
                       <motion.span
                         layoutId="session-active-bar"
-                        className="pointer-events-none absolute inset-0 rounded-xl border-l-[3px] border-primary"
+                        // borda completa (espessura uniforme na curva) revelando só a faixa esquerda
+                        className="pointer-events-none absolute inset-0 rounded-xl border-[3px] border-primary"
+                        style={{
+                          maskImage: "linear-gradient(to right, #000 14px, transparent 14px)",
+                          WebkitMaskImage: "linear-gradient(to right, #000 14px, transparent 14px)",
+                        }}
                         transition={{ type: "spring", stiffness: 500, damping: 40 }}
                       />
                     )}
