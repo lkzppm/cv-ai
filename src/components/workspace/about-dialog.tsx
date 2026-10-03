@@ -1,20 +1,36 @@
 "use client";
 
-import { InfoIcon } from "lucide-react";
+import { useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { InfoIcon, SparklesIcon, LayersIcon, BotIcon, ExternalLinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { CvAgentIcon } from "@/components/brand/cv-agent-icon";
 import { SKILLS_META } from "@/lib/skills-meta";
+import { cn } from "@/lib/utils";
 
-/** Botão "i" do header: o que o agente é, quais skills tem e como decide usá-las. */
+type SectionKey = "overview" | "skills" | "stack";
+
+const SECTIONS: { key: SectionKey; label: string; icon: typeof BotIcon }[] = [
+  { key: "overview", label: "Visão geral", icon: BotIcon },
+  { key: "skills", label: "Skills", icon: SparklesIcon },
+  { key: "stack", label: "Stack", icon: LayersIcon },
+];
+
+const STACK: { name: string; role: string; href: string }[] = [
+  { name: "Next.js 16", role: "App Router, Turbopack e route handlers da API do agente", href: "https://nextjs.org" },
+  { name: "Vercel AI SDK 7", role: "ToolLoopAgent, tools tipadas com zod e streaming para o useChat", href: "https://ai-sdk.dev" },
+  { name: "Groq · gpt-oss-120b", role: "Modelo com tool calling, reasoning e busca na web nativa", href: "https://console.groq.com/docs/models" },
+  { name: "AI Elements + shadcn/ui", role: "Componentes de conversa, mensagens, tools e reasoning", href: "https://elements.ai-sdk.dev" },
+  { name: "vgpu (WebGPU)", role: "Fundo com documentos esboçados em shader WGSL", href: "https://github.com/vercel-labs/vgpu" },
+  { name: "motion", role: "Transições e micro-interações da interface", href: "https://motion.dev" },
+  { name: "zustand + unpdf", role: "Sessões no navegador e extração de texto de PDF", href: "https://github.com/pmndrs/zustand" },
+];
+
+/** Botão "i" do header: diálogo com sub-menu (visão geral · skills · stack). */
 export function AboutDialog() {
+  const [section, setSection] = useState<SectionKey>("overview");
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -22,57 +38,179 @@ export function AboutDialog() {
           <InfoIcon />
         </Button>
       </DialogTrigger>
-      <DialogContent className="glass-strong max-w-lg rounded-3xl p-0 sm:max-w-xl">
-        <DialogHeader className="px-6 pt-6">
-          <div className="flex items-center gap-3">
-            <CvAgentIcon className="size-9 shrink-0 text-primary" />
-            <div>
-              <DialogTitle className="text-lg">CV Agent</DialogTitle>
-              <DialogDescription>
-                Agente de IA que analisa, pontua e reescreve currículos usando skills.
-              </DialogDescription>
+      <DialogContent className="glass-strong max-w-[720px] overflow-hidden rounded-3xl p-0 sm:max-w-[720px]">
+        <DialogTitle className="sr-only">Sobre o CV Agent</DialogTitle>
+        <DialogDescription className="sr-only">O que o agente é, quais skills tem e com que tecnologias foi feito.</DialogDescription>
+
+        <div className="grid min-h-[440px] grid-cols-[180px_1fr]">
+          {/* sub-menu */}
+          <nav className="flex flex-col gap-1 border-r border-glass-border bg-background/20 p-3">
+            <div className="mb-3 flex items-center gap-2 px-2 pt-1">
+              <CvAgentIcon className="size-6 text-primary" />
+              <span className="text-sm font-semibold tracking-tight">
+                CV<span className="text-gradient">Agent</span>
+              </span>
             </div>
+            {SECTIONS.map((s) => {
+              const active = s.key === section;
+              return (
+                <button
+                  key={s.key}
+                  type="button"
+                  onClick={() => setSection(s.key)}
+                  className={cn(
+                    "relative flex items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[13px] transition-colors",
+                    active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="about-active"
+                      className="absolute inset-0 rounded-xl bg-accent ring-1 ring-primary/25"
+                      transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                    />
+                  )}
+                  <s.icon className={cn("relative size-4", active && "text-primary")} />
+                  <span className="relative">{s.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* conteúdo */}
+          <div className="relative min-w-0 p-6">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={section}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="space-y-4 text-sm"
+              >
+                {section === "overview" && <Overview />}
+                {section === "skills" && <Skills />}
+                {section === "stack" && <Stack />}
+              </motion.div>
+            </AnimatePresence>
           </div>
-        </DialogHeader>
-
-        <div className="space-y-5 px-6 pb-6 text-sm">
-          <p className="text-muted-foreground">
-            Você conversa normalmente. O agente lê o CV que está no painel, decide sozinho qual skill
-            chamar, executa e explica o resultado. Não há botões: a escolha é dele.
-          </p>
-
-          <div>
-            <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Skills
-            </div>
-            <ul className="grid gap-2">
-              {SKILLS_META.map((s) => (
-                <li key={s.key} className="flex items-start gap-3 rounded-2xl border border-glass-border bg-background/40 p-3">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-accent text-primary ring-1 ring-primary/20">
-                    <s.icon className="size-4" />
-                  </span>
-                  <div className="min-w-0">
-                    <div className="font-mono text-[12px] font-semibold text-primary">{s.title}</div>
-                    <div className="text-[12.5px] leading-snug">{s.desc}</div>
-                    <div className="mt-0.5 text-[11.5px] leading-snug text-muted-foreground">Usa {s.when}.</div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[12.5px]">
-            <dt className="text-muted-foreground">Modelo</dt>
-            <dd>Groq · openai/gpt-oss-120b (tool calling + reasoning + web search)</dd>
-            <dt className="text-muted-foreground">Loop</dt>
-            <dd>AI SDK 7 ToolLoopAgent, até 8 passos por mensagem, streaming para a UI</dd>
-            <dt className="text-muted-foreground">Contexto</dt>
-            <dd>O CV atual é enviado a cada mensagem; propostas só entram no painel quando você aplica</dd>
-            <dt className="text-muted-foreground">Dados</dt>
-            <dd>Sessões, versões e conversas ficam no seu navegador (localStorage)</dd>
-          </dl>
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function SectionTitle({ children, sub }: { children: React.ReactNode; sub?: string }) {
+  return (
+    <div>
+      <h3 className="text-[17px] font-semibold tracking-tight">{children}</h3>
+      {sub && <p className="mt-1 text-[13px] text-muted-foreground">{sub}</p>}
+    </div>
+  );
+}
+
+function Overview() {
+  return (
+    <>
+      <SectionTitle sub="Um agente de IA que analisa, pontua e reescreve currículos usando skills.">
+        O que é
+      </SectionTitle>
+      <ol className="space-y-2">
+        {[
+          ["Você fala, ele decide", "Não há botões de skill. O agente interpreta o pedido e escolhe qual ferramenta chamar, podendo encadear várias."],
+          ["O CV é o contexto", "O documento do painel é enviado a cada mensagem; edições feitas por você valem na hora."],
+          ["Nada muda sem você", "Propostas do cv_editor aparecem em um card com Pré-visualizar e Aplicar, e dá para desfazer."],
+        ].map(([t, d], i) => (
+          <li key={t} className="flex gap-3 rounded-2xl border border-glass-border bg-background/30 p-3">
+            <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">{i + 1}</span>
+            <div>
+              <div className="font-medium">{t}</div>
+              <div className="text-[12.5px] leading-snug text-muted-foreground">{d}</div>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <p className="text-[12px] text-muted-foreground">
+        Sessões, versões do CV e conversas ficam apenas no seu navegador. Trabalho da disciplina de Inteligência Artificial.
+      </p>
+    </>
+  );
+}
+
+function Skills() {
+  const [open, setOpen] = useState(SKILLS_META[0].key);
+  return (
+    <>
+      <SectionTitle sub="Cada skill é um par SKILL.md (conhecimento) + código executável. Clique para ver quando o agente usa.">
+        Skills
+      </SectionTitle>
+      <ul className="space-y-1.5">
+        {SKILLS_META.map((s) => {
+          const active = open === s.key;
+          return (
+            <li key={s.key}>
+              <button
+                type="button"
+                onClick={() => setOpen(s.key)}
+                className={cn(
+                  "flex w-full items-start gap-3 rounded-2xl border p-3 text-left transition-colors",
+                  active ? "border-primary/40 bg-accent/70" : "border-glass-border bg-background/30 hover:border-primary/30",
+                )}
+              >
+                <span className={cn("grid size-8 shrink-0 place-items-center rounded-xl ring-1", active ? "bg-primary text-primary-foreground ring-primary" : "bg-background/40 text-primary ring-primary/20")}>
+                  <s.icon className="size-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="font-mono text-[12px] font-semibold text-primary">{s.title}</div>
+                  <div className="text-[12.5px] leading-snug">{s.desc}</div>
+                  <AnimatePresence initial={false}>
+                    {active && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.22 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-2 rounded-lg bg-background/40 px-2.5 py-1.5 text-[12px] text-muted-foreground">
+                          <span className="font-medium text-foreground">Quando usa:</span> {s.when}.
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </>
+  );
+}
+
+function Stack() {
+  return (
+    <>
+      <SectionTitle sub="Tudo roda com uma única chave: GROQ_API_KEY.">Stack</SectionTitle>
+      <ul className="divide-y divide-glass-border rounded-2xl border border-glass-border bg-background/30">
+        {STACK.map((t) => (
+          <li key={t.name} className="flex items-center gap-3 px-3 py-2.5">
+            <div className="min-w-0 flex-1">
+              <div className="text-[13px] font-medium">{t.name}</div>
+              <div className="text-[12px] leading-snug text-muted-foreground">{t.role}</div>
+            </div>
+            <a
+              href={t.href}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Abrir ${t.name}`}
+              className="grid size-7 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-primary"
+            >
+              <ExternalLinkIcon className="size-3.5" />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }

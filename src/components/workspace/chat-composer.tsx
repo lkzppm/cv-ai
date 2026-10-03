@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useImperativeHandle, useRef, useState, type Ref } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowUpIcon, SquareIcon } from "lucide-react";
 import type { ChatStatus } from "ai";
@@ -10,11 +10,18 @@ import { cn } from "@/lib/utils";
 const LINE = 24; // line-height do textarea (px)
 const MAX_LINES = 8;
 
+export type ChatComposerHandle = {
+  /** Preenche o campo (sem enviar) e foca. */
+  setText: (text: string) => void;
+  focus: () => void;
+};
+
 type Props = {
   status: ChatStatus;
   onSend: (text: string) => void;
   onStop: () => void;
   placeholder?: string;
+  ref?: Ref<ChatComposerHandle>;
 };
 
 /**
@@ -23,12 +30,25 @@ type Props = {
  * durante o streaming. Sem dependência do PromptInput do AI Elements para
  * ter controle total do visual.
  */
-export function ChatComposer({ status, onSend, onStop, placeholder }: Props) {
+export function ChatComposer({ status, onSend, onStop, placeholder, ref: handleRef }: Props) {
   const [value, setValue] = useState("");
   const [focused, setFocused] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
   const busy = status === "submitted" || status === "streaming";
   const canSend = value.trim().length > 0 && !busy;
+
+  useImperativeHandle(handleRef, () => ({
+    setText: (text) => {
+      setValue(text);
+      requestAnimationFrame(() => {
+        const el = ref.current;
+        if (!el) return;
+        el.focus();
+        el.setSelectionRange(el.value.length, el.value.length);
+      });
+    },
+    focus: () => ref.current?.focus(),
+  }));
 
   // auto-grow com transição: mede com a transição desligada (senão animaria a
   // partir de 0 a cada tecla), restaura a altura anterior e só então anima.

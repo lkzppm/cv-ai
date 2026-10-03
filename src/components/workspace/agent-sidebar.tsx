@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { AnimatePresence, motion } from "motion/react";
-import { SKILLS_META } from "@/lib/skills-meta";
 import type { CvAgentUIMessage } from "@/agent";
 import { Conversation, ConversationContent, ConversationScrollButton } from "@/components/ai-elements/conversation";
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
-import { ChatComposer } from "./chat-composer";
+import { ChatComposer, type ChatComposerHandle } from "./chat-composer";
+import { EmptyHero } from "./empty-hero";
+import { parseCv } from "@/lib/cv/parse";
 import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-elements/reasoning";
 import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "@/components/ai-elements/tool";
 import { Shimmer } from "@/components/ai-elements/shimmer";
@@ -29,6 +30,11 @@ const SKILL_TITLES: Record<string, string> = {
 export function AgentSidebar() {
   const session = useActiveSession()!;
   const setMessages = useSessions((s) => s.setMessages);
+  const composerRef = useRef<ChatComposerHandle>(null);
+  const cvStats = useMemo(() => {
+    const parsed = parseCv(session.cv);
+    return { empty: !session.cv.trim(), name: parsed.name, words: parsed.wordCount };
+  }, [session.cv]);
 
   // O CV é lido na hora do envio para refletir edições feitas no painel.
   const transport = useMemo(
@@ -78,7 +84,7 @@ export function AgentSidebar() {
 
       <Conversation className="scrollbar-none min-h-0 flex-1">
         <ConversationContent className="gap-5 p-4">
-          {messages.length === 0 && <EmptyHero />}
+          {messages.length === 0 && <EmptyHero cv={cvStats} onExample={(t) => composerRef.current?.setText(t)} />}
           <AnimatePresence initial={false}>
             {messages.map((m) => (
               <motion.div
@@ -153,6 +159,7 @@ export function AgentSidebar() {
 
       <div className="p-3">
         <ChatComposer
+          ref={composerRef}
           status={status}
           onSend={(text) => sendMessage({ text })}
           onStop={stop}
@@ -162,54 +169,6 @@ export function AgentSidebar() {
     </div>
   );
 }
-
-/** Estado vazio: hero + as capacidades do agente (não são botões: ele decide quando usar). */
-function EmptyHero() {
-  return (
-    <motion.div
-      initial="hidden"
-      animate="show"
-      variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } } }}
-      className="flex flex-col gap-5 px-1 pt-6"
-    >
-      <motion.div variants={fadeUp}>
-        <h2 className="text-[26px] font-semibold leading-tight tracking-tight">
-          O que você quer <span className="text-gradient">melhorar</span> no seu CV?
-        </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Converse normalmente. Eu escolho a skill certa para cada pedido e mostro o resultado aqui.
-        </p>
-      </motion.div>
-
-      <div className="grid gap-2">
-        {SKILLS_META.map((s) => (
-          <motion.div
-            key={s.key}
-            variants={fadeUp}
-            className="group flex items-start gap-3 rounded-2xl border border-glass-border bg-background/25 p-3 transition-colors hover:border-primary/40"
-          >
-            <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-accent text-primary ring-1 ring-primary/20 transition-transform group-hover:scale-110">
-              <s.icon className="size-4" />
-            </span>
-            <div className="min-w-0">
-              <div className="font-mono text-[12px] font-semibold text-primary">{s.title}</div>
-              <div className="text-[12.5px] leading-snug text-muted-foreground">{s.desc}</div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      <motion.div variants={fadeUp} className="text-[12px] text-muted-foreground">
-        Experimente: <em>“analise meu CV”</em>, <em>“compare com https://linkedin.com/jobs/view/…”</em>, <em>“reescreva meu resumo”</em>.
-      </motion.div>
-    </motion.div>
-  );
-}
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const } },
-};
 
 type SkillPart = Extract<CvAgentUIMessage["parts"][number], { type: `tool-${string}` }>;
 
