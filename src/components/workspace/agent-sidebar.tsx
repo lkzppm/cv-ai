@@ -4,8 +4,7 @@ import { useEffect, useMemo } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { AnimatePresence, motion } from "motion/react";
-import { SearchIcon, ListChecksIcon, GaugeIcon, Wand2Icon } from "lucide-react";
-import { CvAgentIcon } from "@/components/brand/cv-agent-icon";
+import { SKILLS_META } from "@/lib/skills-meta";
 import type { CvAgentUIMessage } from "@/agent";
 import { Conversation, ConversationContent, ConversationScrollButton } from "@/components/ai-elements/conversation";
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
@@ -29,12 +28,6 @@ import { FormatCard } from "./tool-cards/format-card";
 import { RoleMatchCard } from "./tool-cards/role-match-card";
 import { EditProposalCard } from "./tool-cards/edit-proposal-card";
 
-const SKILLS = [
-  { key: "role_matcher", icon: SearchIcon, title: "role_matcher", desc: "lê links de vagas e pesquisa o mercado em rodadas de web search" },
-  { key: "format_checker", icon: ListChecksIcon, title: "format_checker", desc: "confere padrões de mercado e compatibilidade com ATS" },
-  { key: "cv_scorer", icon: GaugeIcon, title: "cv_scorer", desc: "nota 0–100 com rubrica de 6 dimensões e plano de melhoria" },
-  { key: "cv_editor", icon: Wand2Icon, title: "cv_editor", desc: "reescreve o CV; você revisa e aplica com um clique" },
-] as const;
 
 const SKILL_TITLES: Record<string, string> = {
   "tool-role_matcher": "role_matcher · pesquisa da vaga",
@@ -90,31 +83,24 @@ function AgentSidebarInner() {
   const runningSkill = busy ? findRunningSkill(messages) : null;
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-center gap-2 border-b border-glass-border px-4 py-3">
-        <span className="grid size-7 place-items-center rounded-lg bg-accent text-primary">
-          <CvAgentIcon className="size-4.5" />
-        </span>
-        <div className="text-sm font-semibold">Agente</div>
-        <AnimatePresence mode="wait">
-          {runningSkill ? (
-            <motion.span
-              key={runningSkill}
-              initial={{ opacity: 0, x: 8 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 8 }}
-              className="ml-auto flex items-center gap-2 rounded-full border border-primary/30 bg-accent px-2.5 py-0.5 text-[11px] text-accent-foreground"
-            >
+    <div className="relative flex h-full min-h-0 flex-col">
+      {/* indicador flutuante de skill em execução */}
+      <AnimatePresence>
+        {runningSkill && (
+          <motion.div
+            key={runningSkill}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center"
+          >
+            <span className="glass flex items-center gap-2 rounded-full px-3 py-1 text-[11px] text-accent-foreground">
               <span className="pulse-dot size-1.5 rounded-full bg-primary" />
-              {runningSkill}
-            </motion.span>
-          ) : (
-            <motion.span key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="ml-auto text-[11px] text-muted-foreground">
-              {busy ? "pensando…" : "4 skills · invocadas pelo agente"}
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </div>
+              executando {runningSkill}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Conversation className="min-h-0 flex-1">
         <ConversationContent className="gap-5 p-4">
@@ -227,7 +213,7 @@ function EmptyHero() {
       </motion.div>
 
       <div className="grid gap-2">
-        {SKILLS.map((s) => (
+        {SKILLS_META.map((s) => (
           <motion.div
             key={s.key}
             variants={fadeUp}

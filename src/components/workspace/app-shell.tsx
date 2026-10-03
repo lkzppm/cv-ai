@@ -10,6 +10,7 @@ import { useActiveSession, useSessions } from "@/lib/store/sessions";
 import { SessionsRail } from "./sessions-rail";
 import { CvPanel } from "./cv-panel";
 import { AgentSidebar } from "./agent-sidebar";
+import { AboutDialog } from "./about-dialog";
 
 /**
  * Layout em 3 colunas sobre o fundo de fluido:
@@ -35,13 +36,20 @@ export function AppShell() {
         initial={{ y: -16, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-20 flex h-14 shrink-0 items-center gap-2 px-3"
+        className="relative z-20 grid h-16 shrink-0 grid-cols-[1fr_auto_1fr] items-center px-3"
       >
-        <Button variant="ghost" size="icon-sm" onClick={() => setRailOpen((v) => !v)} aria-label="Alternar sessões" className="rounded-xl">
-          <PanelLeftIcon />
-        </Button>
-        <Logo />
-        <div className="ml-auto flex items-center gap-1">
+        <div className="flex items-center">
+          <Button variant="ghost" size="icon-sm" onClick={() => setRailOpen((v) => !v)} aria-label="Alternar sessões" className="rounded-xl">
+            <PanelLeftIcon />
+          </Button>
+        </div>
+
+        <div className="glass flex items-center rounded-full py-1.5 pr-5 pl-2 shadow-[0_16px_40px_-20px_rgba(0,0,0,.6)]">
+          <Logo size="lg" />
+        </div>
+
+        <div className="flex items-center justify-end gap-1">
+          <AboutDialog />
           <Button asChild variant="ghost" size="icon-sm" className="rounded-xl" aria-label="GitHub">
             <a href="https://github.com/lkzppm/cv-ai" target="_blank" rel="noreferrer">
               <GitHubMark />
