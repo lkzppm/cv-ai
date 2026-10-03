@@ -8,6 +8,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useSessions } from "@/lib/store/sessions";
 import { cn } from "@/lib/utils";
 
+const INDICATOR_MASK = [
+  "linear-gradient(to right, #000 12.5px, transparent 12.5px)",
+  "radial-gradient(circle at 12.5px 1.5px, #000 1.45px, transparent 1.6px)",
+  "radial-gradient(circle at 12.5px calc(100% - 1.5px), #000 1.45px, transparent 1.6px)",
+].join(", ");
+
 export function SessionsRail() {
   const sessions = useSessions((s) => s.sessions);
   const activeId = useSessions((s) => s.activeId);
@@ -58,12 +64,10 @@ export function SessionsRail() {
                     {active && (
                       <motion.span
                         layoutId="session-active-bar"
-                        // borda completa (espessura uniforme na curva) revelando só a faixa esquerda
+                        // borda completa (espessura uniforme na curva) revelando só a faixa esquerda;
+                        // dois círculos na máscara arredondam as pontas onde a faixa termina
                         className="pointer-events-none absolute inset-0 rounded-xl border-[3px] border-primary"
-                        style={{
-                          maskImage: "linear-gradient(to right, #000 14px, transparent 14px)",
-                          WebkitMaskImage: "linear-gradient(to right, #000 14px, transparent 14px)",
-                        }}
+                        style={{ maskImage: INDICATOR_MASK, WebkitMaskImage: INDICATOR_MASK }}
                         transition={{ type: "spring", stiffness: 500, damping: 40 }}
                       />
                     )}
