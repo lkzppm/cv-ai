@@ -41,9 +41,6 @@ export function AppShell() {
           <PanelLeftIcon />
         </Button>
         <Logo />
-        <span className="ml-3 hidden rounded-full border border-glass-border bg-glass px-2.5 py-0.5 text-[11px] text-muted-foreground backdrop-blur md:inline">
-          Next.js 16 · AI SDK 7 · Groq · vgpu
-        </span>
         <div className="ml-auto flex items-center gap-1">
           <Button asChild variant="ghost" size="icon-sm" className="rounded-xl" aria-label="GitHub">
             <a href="https://github.com/lkzppm/cv-ai" target="_blank" rel="noreferrer">
