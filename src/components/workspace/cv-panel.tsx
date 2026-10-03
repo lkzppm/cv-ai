@@ -61,7 +61,7 @@ export function CvPanel() {
   };
 
   return (
-    <div className="relative mx-auto flex max-w-[760px] flex-col pb-24 pt-2">
+    <div className="relative mx-auto flex max-w-[760px] flex-col pb-28">
       {/* cabeçalho discreto */}
       <div className="mb-3 flex items-center gap-2 px-1 text-[11px] text-muted-foreground">
         <span className="font-semibold uppercase tracking-[0.18em]">CV atual</span>

@@ -165,6 +165,13 @@
   html {
     @apply font-sans;
   }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href],
+  label[for],
+  summary {
+    cursor: pointer;
+  }
   ::selection {
     background: color-mix(in oklab, var(--brand) 30%, transparent);
   }

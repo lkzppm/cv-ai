@@ -18,16 +18,14 @@ export function AboutDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon-sm" className="rounded-xl" aria-label="Sobre o agente">
+        <Button variant="ghost" size="icon-sm" className="rounded-full text-muted-foreground hover:text-foreground" aria-label="Sobre o agente">
           <InfoIcon />
         </Button>
       </DialogTrigger>
       <DialogContent className="glass-strong max-w-lg rounded-3xl p-0 sm:max-w-xl">
         <DialogHeader className="px-6 pt-6">
           <div className="flex items-center gap-3">
-            <span className="grid size-10 place-items-center rounded-2xl bg-accent text-primary ring-1 ring-primary/25">
-              <CvAgentIcon className="size-6" />
-            </span>
+            <CvAgentIcon className="size-9 shrink-0 text-primary" />
             <div>
               <DialogTitle className="text-lg">CV Agent</DialogTitle>
               <DialogDescription>

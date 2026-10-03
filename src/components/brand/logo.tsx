@@ -12,15 +12,8 @@ export function Logo({
 }) {
   const lg = size === "lg";
   return (
-    <div className={cn("flex items-center select-none", lg ? "gap-3" : "gap-2.5", className)}>
-      <span
-        className={cn(
-          "grid place-items-center rounded-xl bg-accent text-primary ring-1 ring-primary/25",
-          lg ? "size-9" : "size-8",
-        )}
-      >
-        <CvAgentIcon className={lg ? "size-6" : "size-5"} />
-      </span>
+    <div className={cn("flex items-center select-none", lg ? "gap-2.5" : "gap-2", className)}>
+      <CvAgentIcon className={cn("shrink-0 text-primary", lg ? "size-7" : "size-5")} />
       {!compact && (
         <span className={cn("font-semibold tracking-tight", lg ? "text-[19px]" : "text-[15px]")}>
           CV<span className="text-gradient">Agent</span>

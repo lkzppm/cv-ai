@@ -48,12 +48,12 @@ export function AppShell() {
           </Button>
         </div>
 
-        <div className="glass flex items-center rounded-full py-1.5 pr-5 pl-2 shadow-[0_16px_40px_-20px_rgba(0,0,0,.6)]">
+        <div className="glass flex items-center gap-1 rounded-full py-1.5 pr-2 pl-4 shadow-[0_16px_40px_-20px_rgba(0,0,0,.6)]">
           <Logo size="lg" />
+          <AboutDialog />
         </div>
 
         <div className="flex items-center justify-end gap-1">
-          <AboutDialog />
           <Button asChild variant="ghost" size="icon-sm" className="rounded-xl" aria-label="GitHub">
             <a href="https://github.com/lkzppm/cv-ai" target="_blank" rel="noreferrer">
               <GitHubMark />
@@ -88,7 +88,7 @@ export function AppShell() {
           </div>
         </motion.aside>
 
-        <main className="scrollbar-none relative min-w-0 flex-1 overflow-y-auto rounded-2xl">
+        <main className="scrollbar-none relative min-w-0 flex-1 overflow-y-auto">
           <AnimatePresence mode="wait">
             {hasHydrated && session ? (
               <motion.div
@@ -97,7 +97,7 @@ export function AppShell() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -16, scale: 0.985 }}
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="min-h-full"
+                className="min-h-full px-6 pt-5 md:px-10"
               >
                 <CvPanel />
               </motion.div>
