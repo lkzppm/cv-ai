@@ -7,6 +7,9 @@ import type { ChatStatus } from "ai";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 
+const LINE = 24; // line-height do textarea (px)
+const MAX_LINES = 8;
+
 type Props = {
   status: ChatStatus;
   onSend: (text: string) => void;
@@ -27,12 +30,19 @@ export function ChatComposer({ status, onSend, onStop, placeholder }: Props) {
   const busy = status === "submitted" || status === "streaming";
   const canSend = value.trim().length > 0 && !busy;
 
-  // auto-grow
+  // auto-grow com transição: mede com a transição desligada (senão animaria a
+  // partir de 0 a cada tecla), restaura a altura anterior e só então anima.
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    const prev = el.style.height || `${LINE}px`;
+    el.style.transition = "none";
     el.style.height = "0px";
-    el.style.height = Math.min(el.scrollHeight, 8 * 24 + 8) + "px";
+    const target = Math.max(LINE, Math.min(el.scrollHeight, MAX_LINES * LINE));
+    el.style.height = prev;
+    void el.offsetHeight; // reflow para fixar o ponto de partida
+    el.style.transition = "";
+    el.style.height = `${target}px`;
   }, [value]);
 
   const submit = useCallback(() => {
@@ -46,7 +56,7 @@ export function ChatComposer({ status, onSend, onStop, placeholder }: Props) {
   return (
     <div
       className={cn(
-        "glass relative rounded-[26px] p-2 pl-4 transition-shadow duration-300",
+        "glass relative flex items-end gap-2 rounded-[24px] py-1.5 pr-1.5 pl-4 transition-shadow duration-300",
         focused ? "ring-glow" : "shadow-[0_10px_30px_-18px_rgba(0,0,0,.6)]",
       )}
       onClick={() => ref.current?.focus()}
@@ -66,49 +76,48 @@ export function ChatComposer({ status, onSend, onStop, placeholder }: Props) {
         }}
         placeholder={placeholder}
         aria-label="Mensagem para o agente"
-        className="block w-full resize-none bg-transparent py-2.5 pr-12 text-[14px] leading-6 text-foreground outline-none placeholder:text-muted-foreground/70"
+        style={{ height: LINE }}
+        className="scrollbar-none block min-w-0 flex-1 resize-none self-center bg-transparent py-0 text-[14px] leading-6 text-foreground outline-none transition-[height] duration-200 ease-out placeholder:text-muted-foreground/70"
       />
 
-      <div className="mt-1 flex items-center justify-end pb-0.5">
-        <motion.button
-          type="button"
-          whileTap={{ scale: 0.92 }}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (busy) onStop();
-            else submit();
-          }}
-          disabled={!busy && !canSend}
-          aria-label={busy ? "Parar" : "Enviar"}
-          className={cn(
-            "grid size-9 place-items-center rounded-full transition-all duration-200",
-            busy
-              ? "bg-foreground/10 text-foreground hover:bg-foreground/15"
-              : canSend
-                ? "bg-primary text-primary-foreground shadow-[0_8px_24px_-10px_var(--brand)] hover:brightness-110"
-                : "bg-foreground/8 text-muted-foreground/60",
-          )}
-        >
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.span
-              key={status === "submitted" ? "spin" : busy ? "stop" : "send"}
-              initial={{ scale: 0.6, opacity: 0, rotate: -20 }}
-              animate={{ scale: 1, opacity: 1, rotate: 0 }}
-              exit={{ scale: 0.6, opacity: 0, rotate: 20 }}
-              transition={{ duration: 0.16 }}
-              className="grid place-items-center"
-            >
-              {status === "submitted" ? (
-                <Spinner className="size-4" />
-              ) : busy ? (
-                <SquareIcon className="size-3.5" fill="currentColor" />
-              ) : (
-                <ArrowUpIcon className="size-4" strokeWidth={2.5} />
-              )}
-            </motion.span>
-          </AnimatePresence>
-        </motion.button>
-      </div>
+      <motion.button
+        type="button"
+        whileTap={{ scale: 0.92 }}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (busy) onStop();
+          else submit();
+        }}
+        disabled={!busy && !canSend}
+        aria-label={busy ? "Parar" : "Enviar"}
+        className={cn(
+          "grid size-8 shrink-0 place-items-center rounded-full transition-all duration-200",
+          busy
+            ? "bg-foreground/10 text-foreground hover:bg-foreground/15"
+            : canSend
+              ? "bg-primary text-primary-foreground shadow-[0_8px_24px_-10px_var(--brand)] hover:brightness-110"
+              : "bg-foreground/8 text-muted-foreground/60",
+        )}
+      >
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span
+            key={status === "submitted" ? "spin" : busy ? "stop" : "send"}
+            initial={{ scale: 0.6, opacity: 0, rotate: -20 }}
+            animate={{ scale: 1, opacity: 1, rotate: 0 }}
+            exit={{ scale: 0.6, opacity: 0, rotate: 20 }}
+            transition={{ duration: 0.16 }}
+            className="grid place-items-center"
+          >
+            {status === "submitted" ? (
+              <Spinner className="size-4" />
+            ) : busy ? (
+              <SquareIcon className="size-3.5" fill="currentColor" />
+            ) : (
+              <ArrowUpIcon className="size-4" strokeWidth={2.5} />
+            )}
+          </motion.span>
+        </AnimatePresence>
+      </motion.button>
     </div>
   );
 }
