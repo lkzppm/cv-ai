@@ -275,22 +275,23 @@
 
 /* Colapsáveis fluidos (Radix expõe a altura do conteúdo em --radix-collapsible-content-height) */
 @keyframes collapsible-down {
-  from { height: 0; opacity: 0; transform: translateY(-4px); }
-  to { height: var(--radix-collapsible-content-height); opacity: 1; transform: translateY(0); }
+  from { height: 0; opacity: 0; }
+  to { height: var(--radix-collapsible-content-height); opacity: 1; }
 }
 @keyframes collapsible-up {
-  from { height: var(--radix-collapsible-content-height); opacity: 1; transform: translateY(0); }
-  to { height: 0; opacity: 0; transform: translateY(-4px); }
+  from { height: var(--radix-collapsible-content-height); opacity: 1; }
+  to { height: 0; opacity: 0; }
 }
 .collapsible-fluid {
   overflow: hidden;
+  will-change: height, opacity;
 }
 /* !important: sobrescreve o animate-in/out (tw-animate) dos componentes gerados */
 .collapsible-fluid[data-state="open"] {
-  animation: collapsible-down 0.38s var(--ease-out-expo) !important;
+  animation: collapsible-down 0.3s var(--ease-out-expo) !important;
 }
 .collapsible-fluid[data-state="closed"] {
-  animation: collapsible-up 0.26s cubic-bezier(0.4, 0, 0.6, 1) !important;
+  animation: collapsible-up 0.22s ease-in !important;
 }
 @media (prefers-reduced-motion: reduce) {
   .collapsible-fluid[data-state="open"],
