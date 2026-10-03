@@ -40,7 +40,7 @@ export const useSessions = create<State & Actions>()(
     (set, get) => ({
       sessions: [],
       activeId: null,
-      theme: "light",
+      theme: "dark",
 
       createSession: ({ cv = SAMPLE_CV, title } = {}) => {
         const id = newId();
@@ -97,9 +97,23 @@ export const useSessions = create<State & Actions>()(
             return { ...x, messages, title, updatedAt: Date.now() };
           }),
         })),
-      toggleTheme: () => set((s) => ({ theme: s.theme === "light" ? "dark" : "light" })),
+      toggleTheme: () => {
+        const next = get().theme === "light" ? "dark" : "light";
+        // View Transitions API quando disponível: crossfade suave entre temas
+        const doc = document as Document & { startViewTransition?: (cb: () => void) => void };
+        if (doc.startViewTransition) doc.startViewTransition(() => set({ theme: next }));
+        else set({ theme: next });
+      },
     }),
-    { name: "cv-ai:sessions", version: 1 },
+    {
+      name: "cv-ai:sessions",
+      version: 2,
+      migrate: (persisted, version) => {
+        const state = persisted as State;
+        if (version < 2) return { ...state, theme: "dark" as const };
+        return state;
+      },
+    },
   ),
 );
 

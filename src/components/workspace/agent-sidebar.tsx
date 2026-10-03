@@ -3,14 +3,10 @@
 import { useEffect, useMemo } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { SparklesIcon } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { SparklesIcon, SearchIcon, ListChecksIcon, GaugeIcon, Wand2Icon } from "lucide-react";
 import type { CvAgentUIMessage } from "@/agent";
-import {
-  Conversation,
-  ConversationContent,
-  ConversationEmptyState,
-  ConversationScrollButton,
-} from "@/components/ai-elements/conversation";
+import { Conversation, ConversationContent, ConversationScrollButton } from "@/components/ai-elements/conversation";
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
 import {
   PromptInput,
@@ -27,11 +23,17 @@ import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-e
 import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "@/components/ai-elements/tool";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { useActiveSession, useSessions } from "@/lib/store/sessions";
-import { SkillChips, type SkillChip } from "./skill-chips";
 import { ScoreCard } from "./tool-cards/score-card";
 import { FormatCard } from "./tool-cards/format-card";
 import { RoleMatchCard } from "./tool-cards/role-match-card";
 import { EditProposalCard } from "./tool-cards/edit-proposal-card";
+
+const SKILLS = [
+  { key: "role_matcher", icon: SearchIcon, title: "role_matcher", desc: "lê links de vagas e pesquisa o mercado em rodadas de web search" },
+  { key: "format_checker", icon: ListChecksIcon, title: "format_checker", desc: "confere padrões de mercado e compatibilidade com ATS" },
+  { key: "cv_scorer", icon: GaugeIcon, title: "cv_scorer", desc: "nota 0–100 com rubrica de 6 dimensões e plano de melhoria" },
+  { key: "cv_editor", icon: Wand2Icon, title: "cv_editor", desc: "reescreve o CV; você revisa e aplica com um clique" },
+] as const;
 
 const SKILL_TITLES: Record<string, string> = {
   "tool-role_matcher": "role_matcher · pesquisa da vaga",
@@ -72,7 +74,6 @@ function AgentSidebarInner() {
     transport,
   });
 
-  // Persiste a conversa na sessão quando o stream termina.
   useEffect(() => {
     if (status === "ready" || status === "error") setMessages(session.id, messages);
   }, [messages, status, session.id, setMessages]);
@@ -84,89 +85,121 @@ function AgentSidebarInner() {
     controller.textInput.clear();
   };
 
-  const onChip = (chip: SkillChip) => {
-    if (chip.mode === "send") sendMessage({ text: chip.prompt });
-    else controller.textInput.setInput(chip.prompt);
-  };
-
   const busy = status === "submitted" || status === "streaming";
+  const runningSkill = busy ? findRunningSkill(messages) : null;
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-center gap-2 border-b px-4 py-3">
-        <SparklesIcon className="size-4 text-primary" />
+      <div className="flex items-center gap-2 border-b border-glass-border px-4 py-3">
+        <span className="grid size-7 place-items-center rounded-lg bg-accent text-primary">
+          <SparklesIcon className="size-4" />
+        </span>
         <div className="text-sm font-semibold">Agente</div>
-        <span className="ml-auto text-[11px] text-muted-foreground">4 skills</span>
+        <AnimatePresence mode="wait">
+          {runningSkill ? (
+            <motion.span
+              key={runningSkill}
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 8 }}
+              className="ml-auto flex items-center gap-2 rounded-full border border-aqua/30 bg-aqua/10 px-2.5 py-0.5 text-[11px] text-aqua"
+            >
+              <span className="pulse-dot size-1.5 rounded-full bg-aqua" />
+              {runningSkill}
+            </motion.span>
+          ) : (
+            <motion.span key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="ml-auto text-[11px] text-muted-foreground">
+              {busy ? "pensando…" : "4 skills · invocadas pelo agente"}
+            </motion.span>
+          )}
+        </AnimatePresence>
       </div>
 
       <Conversation className="min-h-0 flex-1">
-        <ConversationContent className="gap-4 p-4">
-          {messages.length === 0 && (
-            <ConversationEmptyState
-              icon={<SparklesIcon className="size-8 text-primary" />}
-              title="O que você quer melhorar no CV?"
-              description="Peça uma análise, cole links de vagas ou escolha uma skill abaixo."
-            />
-          )}
-          {messages.map((m) => (
-            <Message key={m.id} from={m.role}>
-              <MessageContent>
-                {m.parts.map((part, i) => {
-                  switch (part.type) {
-                    case "text":
-                      return <MessageResponse key={i}>{part.text}</MessageResponse>;
-                    case "reasoning":
-                      return (
-                        <Reasoning key={i} isStreaming={part.state === "streaming"}>
-                          <ReasoningTrigger />
-                          <ReasoningContent>{part.text}</ReasoningContent>
-                        </Reasoning>
-                      );
-                    case "tool-role_matcher":
-                    case "tool-format_checker":
-                    case "tool-cv_scorer":
-                    case "tool-cv_editor":
-                      return (
-                        <Tool key={part.toolCallId} defaultOpen={part.state === "output-available" || part.state === "output-error"}>
-                          <ToolHeader type={part.type} state={part.state} title={SKILL_TITLES[part.type]} />
-                          <ToolContent>
-                            {part.state === "input-streaming" && <Shimmer>Preparando a skill…</Shimmer>}
-                            {part.state === "input-available" && <Shimmer>{`Executando ${part.type.replace("tool-", "")}…`}</Shimmer>}
-                            {part.state === "output-error" && <ToolOutput output={undefined} errorText={part.errorText} />}
-                            {part.state === "output-available" && renderSkillOutput(part)}
-                            {part.state !== "output-available" && part.type !== "tool-cv_editor" && part.input != null && (
-                              <ToolInput input={part.input} />
-                            )}
-                          </ToolContent>
-                        </Tool>
-                      );
-                    default:
-                      return null;
-                  }
-                })}
-              </MessageContent>
-            </Message>
-          ))}
+        <ConversationContent className="gap-5 p-4">
+          {messages.length === 0 && <EmptyHero />}
+          <AnimatePresence initial={false}>
+            {messages.map((m) => (
+              <motion.div
+                key={m.id}
+                initial={{ opacity: 0, y: 14, filter: "blur(4px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <Message from={m.role}>
+                  <MessageContent className={m.role === "user" ? "bg-[linear-gradient(135deg,var(--iris),var(--magenta))] text-white" : ""}>
+                    {m.parts.map((part, i) => {
+                      switch (part.type) {
+                        case "text":
+                          return <MessageResponse key={i}>{part.text}</MessageResponse>;
+                        case "reasoning":
+                          return (
+                            <Reasoning key={i} isStreaming={part.state === "streaming"}>
+                              <ReasoningTrigger />
+                              <ReasoningContent>{part.text}</ReasoningContent>
+                            </Reasoning>
+                          );
+                        case "tool-role_matcher":
+                        case "tool-format_checker":
+                        case "tool-cv_scorer":
+                        case "tool-cv_editor":
+                          return (
+                            <motion.div
+                              key={part.toolCallId}
+                              layout
+                              initial={{ opacity: 0, scale: 0.97 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ type: "spring", stiffness: 300, damping: 26 }}
+                            >
+                              <Tool defaultOpen={part.state === "output-available" || part.state === "output-error"} className="gradient-border rounded-2xl">
+                                <ToolHeader type={part.type} state={part.state} title={SKILL_TITLES[part.type]} />
+                                <ToolContent>
+                                  {part.state === "input-streaming" && <Shimmer>Preparando a skill…</Shimmer>}
+                                  {part.state === "input-available" && <Shimmer>{`Executando ${part.type.replace("tool-", "")}…`}</Shimmer>}
+                                  {part.state === "output-error" && <ToolOutput output={undefined} errorText={part.errorText} />}
+                                  {part.state === "output-available" && renderSkillOutput(part)}
+                                  {part.state !== "output-available" && part.type !== "tool-cv_editor" && part.input != null && (
+                                    <ToolInput input={part.input} />
+                                  )}
+                                </ToolContent>
+                              </Tool>
+                            </motion.div>
+                          );
+                        default:
+                          return null;
+                      }
+                    })}
+                  </MessageContent>
+                </Message>
+              </motion.div>
+            ))}
+          </AnimatePresence>
           {status === "submitted" && <Shimmer className="px-2 text-sm">Pensando…</Shimmer>}
           {error && (
-            <div className="rounded-md border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">
               {error.message}
-            </div>
+            </motion.div>
           )}
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>
 
-      <SkillChips onPick={onChip} />
-
-      <div className="border-t p-3">
-        <PromptInput onSubmit={onSubmit} className="rounded-xl">
+      <div className="p-3">
+        <PromptInput
+          onSubmit={onSubmit}
+          className="rounded-2xl border-glass-border bg-background/60 shadow-none transition-shadow focus-within:ring-glow"
+        >
           <PromptInputBody>
-            <PromptInputTextarea placeholder="Ex.: compare meu CV com esta vaga: https://linkedin.com/jobs/view/…" />
+            <PromptInputTextarea placeholder="Peça uma análise, cole o link de uma vaga ou diga o que mudar…" />
           </PromptInputBody>
           <PromptInputFooter>
             <PromptInputTools />
-            <PromptInputSubmit status={status} onStop={stop} disabled={!busy && !controller.textInput.value.trim()} />
+            <PromptInputSubmit
+              status={status}
+              onStop={stop}
+              disabled={!busy && !controller.textInput.value.trim()}
+              className="rounded-full bg-[linear-gradient(135deg,var(--iris),var(--magenta))] text-white"
+            />
           </PromptInputFooter>
         </PromptInput>
       </div>
@@ -174,7 +207,67 @@ function AgentSidebarInner() {
   );
 }
 
+/** Estado vazio: hero + as capacidades do agente (não são botões: ele decide quando usar). */
+function EmptyHero() {
+  return (
+    <motion.div
+      initial="hidden"
+      animate="show"
+      variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } } }}
+      className="flex flex-col gap-5 px-1 pt-6"
+    >
+      <motion.div variants={fadeUp}>
+        <h2 className="text-[26px] font-semibold leading-tight tracking-tight">
+          O que você quer <span className="text-gradient">melhorar</span> no seu CV?
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Converse normalmente. Eu escolho a skill certa para cada pedido e mostro o resultado aqui.
+        </p>
+      </motion.div>
+
+      <div className="grid gap-2">
+        {SKILLS.map((s) => (
+          <motion.div
+            key={s.key}
+            variants={fadeUp}
+            className="group flex items-start gap-3 rounded-2xl border border-glass-border bg-background/40 p-3 transition-colors hover:border-primary/40"
+          >
+            <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-[linear-gradient(135deg,var(--iris),var(--aqua))] text-white shadow-[0_8px_20px_-10px_var(--iris)] transition-transform group-hover:scale-110">
+              <s.icon className="size-4" />
+            </span>
+            <div className="min-w-0">
+              <div className="font-mono text-[12px] font-semibold text-primary">{s.title}</div>
+              <div className="text-[12.5px] leading-snug text-muted-foreground">{s.desc}</div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      <motion.div variants={fadeUp} className="text-[12px] text-muted-foreground">
+        Experimente: <em>“analise meu CV”</em>, <em>“compare com https://linkedin.com/jobs/view/…”</em>, <em>“reescreva meu resumo”</em>.
+      </motion.div>
+    </motion.div>
+  );
+}
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const } },
+};
+
 type SkillPart = Extract<CvAgentUIMessage["parts"][number], { type: `tool-${string}` }>;
+
+function findRunningSkill(messages: CvAgentUIMessage[]): string | null {
+  const last = messages[messages.length - 1];
+  if (!last || last.role !== "assistant") return null;
+  for (let i = last.parts.length - 1; i >= 0; i--) {
+    const p = last.parts[i];
+    if (p.type.startsWith("tool-") && "state" in p && (p.state === "input-streaming" || p.state === "input-available")) {
+      return p.type.replace("tool-", "");
+    }
+  }
+  return null;
+}
 
 function renderSkillOutput(part: SkillPart) {
   if (part.state !== "output-available") return null;

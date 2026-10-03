@@ -5,40 +5,44 @@ import { useSessions } from "@/lib/store/sessions";
 import { cn } from "@/lib/utils";
 
 /**
- * Fundo animado. Usa WebGPU via vgpu quando disponível; caso contrário cai
- * para um gradiente CSS animado (mesma paleta).
+ * Fundo da aplicação: simulação de fluido em WebGPU (vgpu) que reage ao
+ * movimento do cursor. Sem WebGPU (ou se a inicialização falhar), cai para um
+ * gradiente CSS animado com a mesma paleta.
  */
 export function AmbientCanvas({ className }: { className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
-  // No servidor assumimos WebGPU (renderiza o canvas); no cliente checamos navigator.gpu.
   const hasWebGpu = useSyncExternalStore(
     () => () => {},
     () => "gpu" in navigator,
     () => true,
   );
   const [initFailed, setInitFailed] = useState(false);
-  const fallback = !hasWebGpu || initFailed;
   const themeRef = useRef(useSessions.getState().theme);
+  const fallback = !hasWebGpu || initFailed;
 
   useEffect(() => useSessions.subscribe((s) => void (themeRef.current = s.theme)), []);
 
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas || !hasWebGpu) return;
-    let stop: (() => void) | undefined;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let dispose: (() => void) | undefined;
     let cancelled = false;
-    // import dinâmico: vgpu só existe no browser
-    import("./ambient").then(({ startAmbient }) => {
+    import("./fluid/renderer").then(({ createFluidRenderer }) => {
       if (cancelled) return;
-      stop = startAmbient(canvas, () => themeRef.current === "dark");
-      const obs = new MutationObserver(() => {
-        if (canvas.dataset.fallback) setInitFailed(true);
+      const r = createFluidRenderer({
+        canvas,
+        getDark: () => themeRef.current === "dark",
+        onError: (err) => {
+          console.warn("[ambient] WebGPU falhou, usando fallback CSS", err);
+          setInitFailed(true);
+        },
       });
-      obs.observe(canvas, { attributes: true, attributeFilter: ["data-fallback"] });
+      dispose = r.dispose;
     });
     return () => {
       cancelled = true;
-      stop?.();
+      dispose?.();
     };
   }, [hasWebGpu]);
 
@@ -49,6 +53,8 @@ export function AmbientCanvas({ className }: { className?: string }) {
       ) : (
         <canvas ref={ref} className="block h-full w-full" />
       )}
+      {/* grão sutil por cima para dar textura */}
+      <div className="grain absolute inset-0 opacity-[0.07] mix-blend-overlay" />
     </div>
   );
 }

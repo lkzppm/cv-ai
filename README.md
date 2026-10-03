@@ -3,7 +3,7 @@
 > Trabalho da disciplina de **Inteligência Artificial** · *Criação de Agente*
 > Enunciado: "Construa passo a passo a implementação de um agente que analise currículos e que use skills para esta tarefa. Mostre o código e os softwares a serem instalados e usados."
 
-Interface no estilo *Claude Design* voltada a currículos: o **CV atual fica no painel principal**, e uma **sidebar** traz o chat com o agente, as skills, os resultados e as propostas de alteração (com botão *Aplicar*). Cada **sessão** guarda um CV, seu histórico de versões e a conversa.
+Interface no estilo *Claude Design* voltada a currículos: o **CV atual fica no painel principal** (folha flutuante sobre um fluido WebGPU que reage ao mouse), e uma **sidebar** traz o chat com o agente, os resultados das skills e as propostas de alteração (com botão *Aplicar*). Não há botões de skill: **o agente decide quando invocar cada uma**. Cada **sessão** guarda um CV, seu histórico de versões e a conversa.
 
 ```
 ┌───────────── header ─────────────────────────────────────────────────────────┐
@@ -24,7 +24,7 @@ Interface no estilo *Claude Design* voltada a currículos: o **CV atual fica no 
 | LLM | **Groq API** (`openai/gpt-oss-120b`) via `@ai-sdk/groq` |
 | Agente | **Vercel AI SDK 7** — `ToolLoopAgent`, streaming para `useChat` |
 | UI | Tailwind v4 · shadcn/ui · **AI Elements** (componentes de chat da Vercel) |
-| Visual | **vgpu** (WebGPU) para o fundo animado nos azuis do LinkedIn, com fallback CSS |
+| Visual | **vgpu** (WebGPU): simulação de fluido interativa como fundo (exemplo oficial adaptado, shaders `.wgsl` tipados) + **motion** para as transições; fallback CSS |
 | Estado | zustand + localStorage (sessões) |
 | PDF | unpdf |
 
@@ -68,7 +68,9 @@ pnpm dev                        # http://localhost:3000
 ```bash
 pnpm create next-app@latest cv-ai --ts --tailwind --eslint --app --src-dir --use-pnpm --import-alias "@/*"
 cd cv-ai
-pnpm add ai @ai-sdk/react @ai-sdk/groq zod zustand react-markdown remark-gfm unpdf vgpu lucide-react radix-ui
+pnpm add ai @ai-sdk/react @ai-sdk/groq zod zustand react-markdown remark-gfm unpdf vgpu lucide-react radix-ui motion
+pnpm add -D @vgpu/wgsl @vgpu/wgsl-std @webgpu/types
+npx vgpu examples pull fluid --out ./fluid-example   # base do fundo interativo
 pnpm dlx shadcn@latest init --base radix --preset nova --template next --yes
 pnpm dlx shadcn@latest add button textarea input scroll-area badge separator tooltip tabs dialog progress
 pnpm dlx ai-elements@latest add conversation message prompt-input tool reasoning sources suggestion shimmer task
@@ -141,7 +143,7 @@ const { messages, sendMessage, status } = useChat<CvAgentUIMessage>({
 
 1. Abra http://localhost:3000 — uma sessão com um CV de exemplo é criada.
 2. Cole o seu CV em **Editar** ou envie um **PDF** (é convertido para Markdown).
-3. Na sidebar, clique em **Verificar formato**, **Dar nota ao CV** ou cole um link de vaga em **Comparar com vaga**.
+3. Na sidebar, converse: "analise meu CV" (o agente roda `format_checker` e `cv_scorer`), cole um link de vaga (`role_matcher`) ou peça mudanças (`cv_editor`).
 4. Peça "aplique as melhorias" → o `cv_editor` gera uma proposta → **Aplicar** → **Desfazer** se quiser.
 5. Exporte em `.md` ou imprima (salvar como PDF).
 

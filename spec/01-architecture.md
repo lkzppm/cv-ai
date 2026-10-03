@@ -8,7 +8,7 @@
 | LLM | Groq API via `@ai-sdk/groq` | Exigência do trabalho; inferência muito rápida; `openai/gpt-oss-120b` tem tool calling + reasoning + `browser_search` nativo |
 | Agente | Vercel AI SDK 7 (`ai`, `@ai-sdk/react`) | `ToolLoopAgent`, streaming de UI messages, tipagem das tools de ponta a ponta |
 | UI | Tailwind v4 + shadcn/ui (radix) + **AI Elements** | Componentes prontos de chat (Conversation, Message, PromptInput, Tool, Reasoning) |
-| Efeito visual | **vgpu** (WebGPU, vercel-labs) | Fundo animado nos azuis do LinkedIn; fallback CSS quando não há WebGPU |
+| Efeito visual | **vgpu** (WebGPU, vercel-labs) + **motion** | Fundo com simulação de fluido interativa (exemplo oficial adaptado); fallback CSS. Transições de UI com motion |
 | Estado | zustand + persist (localStorage) | Sessões/CV/mensagens sem backend |
 | PDF | unpdf | Extrai texto de PDF em Node/serverless |
 
@@ -53,8 +53,8 @@ src/
   components/
     ai-elements/   gerados pelo CLI do AI Elements (não editar à mão; re-adicionar com -o)
     ui/            shadcn (radix)
-    ambient/       vgpu: ambient.ts (WGSL + loop) e ambient-canvas.tsx (fallback)
-    workspace/     app-shell, sessions-rail, cv-panel, cv-markdown, agent-sidebar, skill-chips, tool-cards/*
+    ambient/       vgpu: fluid/ (shaders .wgsl + simulation/renderer/pointer) e ambient-canvas.tsx (fallback)
+    workspace/     app-shell, sessions-rail, cv-panel, cv-markdown, agent-sidebar, tool-cards/*
   lib/
     cv/parse.ts    parser heurístico (seções, bullets, contato, métricas)
     cv/sample.ts   CV de exemplo para sessões novas
@@ -69,4 +69,6 @@ spec/              esta pasta
 - **2026-10-03 — web search via built-in tool da Groq** (`groq.tools.browserSearch`) em vez de Tavily/Serper: zero chaves extras. Limitação: só nos modelos `openai/gpt-oss-*`. Se trocar `GROQ_SEARCH_MODEL` por outro modelo, a skill `role_matcher` perde a busca.
 - **2026-10-03 — `cv_editor` recebe o CV inteiro como *input* da tool** (o modelo escreve o Markdown). Mais simples que diffs e permite preview/aplicar/desfazer no cliente.
 - **SKILL.md lido do disco** (`process.cwd()/src/agent/skills`). `next.config.ts` inclui esses arquivos no tracing do `/api/chat` para deploy serverless.
+- **2026-10-03 — sem botões de skill na UI.** O agente decide quando invocar cada skill (prompt reforça: pedidos amplos → format_checker + cv_scorer; link → role_matcher; "mude/reescreva" → cv_editor). Mantém o foco do trabalho em *agente que usa skills*, não em formulários.
+- **2026-10-03 — paleta "Obsidian"** (íris/aqua/magenta, dark por padrão) substituiu os azuis do LinkedIn; fundo = fluido WebGPU do exemplo oficial do vgpu, carregado como módulos `.wgsl` tipados.
 - **Sem banco de dados**: trabalho acadêmico; `localStorage` basta. Migrar para Postgres/Drizzle está no roadmap.

@@ -17,6 +17,8 @@ Versões fixadas em 2026-10-03 (`package.json` é a fonte da verdade):
 | shadcn | 4.21 (CLI) | `components.json` style `radix-nova` + pacote `radix-ui` |
 | ai-elements | 1.9 (CLI) | registry https://elements.ai-sdk.dev/api/registry/<nome>.json |
 | vgpu | 0.5.0 | WebGPU; `@vgpu/adapter-node` e `webgpu` têm build scripts ignorados (`pnpm-workspace.yaml`) |
+| @vgpu/wgsl, @vgpu/wgsl-std | 0.5.0 (dev) | loader `.wgsl` para Turbopack/webpack + stdlib WGSL (noise, hash, color) |
+| motion | 14.x | animações (`motion/react`): AnimatePresence, layoutId, springs |
 | unpdf | 1.8.x | `getDocumentProxy` + `extractText` |
 | react-markdown + remark-gfm | 10.x / 4.x | render do CV |
 
