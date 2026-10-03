@@ -11,7 +11,7 @@ export function CvAgentIcon(props: SVGProps<SVGSVGElement>) {
       viewBox="0 0 32 32"
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
+      strokeWidth={1.75}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
@@ -30,14 +30,14 @@ export function CvAgentIcon(props: SVGProps<SVGSVGElement>) {
       <path d="M6 11.5H4.5a1 1 0 0 0-1 1v1.5a1 1 0 0 0 1 1H6" />
       <path d="M26 11.5h1.5a1 1 0 0 1 1 1v1.5a1 1 0 0 1-1 1H26" />
       {/* pescoço / cauda do balão */}
-      <path d="M13.5 18l-1.5 2.5" />
+      <path d="M13 18l-1.3 2.5" />
       {/* documento com dobra */}
-      <path d="M9.5 20.5H20l4 4v4.5a1.5 1.5 0 0 1-1.5 1.5h-13a1.5 1.5 0 0 1-1.5-1.5V22a1.5 1.5 0 0 1 1.5-1.5z" />
-      <path d="M20 20.5v4h4" />
+      <path d="M9 20.5h10.5l4.5 4.5v4a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 8 29V22a1.5 1.5 0 0 1 1-1.5z" />
+      <path d="M19.5 20.5V25h4.5" />
       {/* linhas e seta de crescimento */}
-      <path d="M12 28.2h8" />
-      <path d="M12 25.3h3.5l3-2.4" />
-      <path d="M16.6 22.9h1.9v1.9" />
+      <path d="M11.5 28h9" />
+      <path d="M11.5 25.4h3l3-2.3" />
+      <path d="M15.8 23.1h1.7v1.7" />
     </svg>
   );
 }
