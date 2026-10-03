@@ -69,6 +69,7 @@ Fundo temático e discreto: **folhas de currículo esboçadas** (contorno arredo
 - **Mensagem do usuário** sempre branca sobre o azul (`text-white` + regras `.is-user .chat-md`), nos dois temas.
 - **Auto-scroll**: `AutoScroll` (dentro do `Conversation`) chama `scrollToBottom` quando a contagem de mensagens muda ou o status vira `submitted`; o `use-stick-to-bottom` só acompanha o streaming se já estava no fim, por isso o empurrão ao enviar.
 - **Raciocínio**: um bloco por passo do gpt-oss. Blocos vazios são omitidos; os demais viram uma linha pequena "Pensou por Ns" / "Pensando…" (pt-BR) sem margens, para a timeline reasoning → skill → tool ter ritmo uniforme (`gap-2`).
+- **Colapsáveis fluidos** (`.collapsible-fluid` em `globals.css`): keyframes de altura via `--radix-collapsible-content-height` + fade/deslize, com `!important` para vencer o `animate-in/out` dos componentes gerados; usado em skill, tool e raciocínio. Respeita `prefers-reduced-motion`.
 - **Skill carregada vs tool executada** (`skill-activity.tsx`): `SkillLoadedRow` (linha tracejada azul, ícone da skill, "instruções carregadas", expande para ler o SKILL.md) para `tool-load_skill`; `SkillToolHeader` (card sólido, tag TOOL, pílula de estado pt-BR: preparando / executando / concluída / erro) para as demais. O indicador flutuante diz "carregando skill X" ou "executando tool X".
 
 ## Referências de design

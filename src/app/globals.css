@@ -273,6 +273,32 @@
   mask-image: radial-gradient(80% 80% at 50% 50%, #000 40%, transparent 100%);
 }
 
+/* Colapsáveis fluidos (Radix expõe a altura do conteúdo em --radix-collapsible-content-height) */
+@keyframes collapsible-down {
+  from { height: 0; opacity: 0; transform: translateY(-4px); }
+  to { height: var(--radix-collapsible-content-height); opacity: 1; transform: translateY(0); }
+}
+@keyframes collapsible-up {
+  from { height: var(--radix-collapsible-content-height); opacity: 1; transform: translateY(0); }
+  to { height: 0; opacity: 0; transform: translateY(-4px); }
+}
+.collapsible-fluid {
+  overflow: hidden;
+}
+/* !important: sobrescreve o animate-in/out (tw-animate) dos componentes gerados */
+.collapsible-fluid[data-state="open"] {
+  animation: collapsible-down 0.38s var(--ease-out-expo) !important;
+}
+.collapsible-fluid[data-state="closed"] {
+  animation: collapsible-up 0.26s cubic-bezier(0.4, 0, 0.6, 1) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .collapsible-fluid[data-state="open"],
+  .collapsible-fluid[data-state="closed"] {
+    animation-duration: 0.01s !important;
+  }
+}
+
 /* Ponto pulsante (skill em execução) */
 @keyframes pulse-dot {
   0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--brand) 55%, transparent); }

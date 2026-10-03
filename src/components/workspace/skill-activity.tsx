@@ -57,7 +57,7 @@ export function SkillLoadedRow({
         <ChevronDownIcon className="size-3.5 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/skill:rotate-180" />
       </CollapsibleTrigger>
       {(description || instructions) && (
-        <CollapsibleContent className="space-y-2 px-3 pb-3">
+        <CollapsibleContent className="collapsible-fluid space-y-2 px-3 pb-3">
           {description && <p className="text-xs text-muted-foreground">{description}</p>}
           {instructions && (
             <pre className="scrollbar-none max-h-56 overflow-auto rounded-lg bg-background/40 p-2.5 font-mono text-[11px] leading-relaxed whitespace-pre-wrap text-muted-foreground">

@@ -118,7 +118,7 @@ export function AgentSidebar() {
                           return (
                             <Reasoning key={i} isStreaming={part.state === "streaming"} className="mb-0">
                               <ReasoningTrigger className="w-fit py-0.5 text-xs" getThinkingMessage={thinkingMessage} />
-                              <ReasoningContent className="mt-1.5 border-l-2 border-glass-border pl-3 text-xs">{part.text}</ReasoningContent>
+                              <ReasoningContent className="collapsible-fluid mt-1.5 border-l-2 border-glass-border pl-3 text-xs">{part.text}</ReasoningContent>
                             </Reasoning>
                           );
                         case "tool-load_skill":
@@ -155,7 +155,7 @@ export function AgentSidebar() {
                             >
                               <Tool defaultOpen={part.state === "output-available" || part.state === "output-error"} className="gradient-border mb-0 rounded-2xl">
                                 <SkillToolHeader name={part.type.replace("tool-", "")} state={part.state} subtitle={SKILL_SUBTITLES[part.type]} />
-                                <ToolContent>
+                                <ToolContent className="collapsible-fluid">
                                   {part.state === "input-streaming" && <Shimmer>Preparando a skill…</Shimmer>}
                                   {part.state === "input-available" && <Shimmer>{`Executando ${part.type.replace("tool-", "")}…`}</Shimmer>}
                                   {part.state === "output-error" && <ToolOutput output={undefined} errorText={part.errorText} />}
