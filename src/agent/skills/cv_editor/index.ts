@@ -24,5 +24,15 @@ export function createCvEditor(ctx: { cv: string }) {
         stats: { wordsBefore: before, wordsAfter: after, delta: after - before },
       };
     },
+    // Não devolve o CV inteiro ao modelo (ele já o escreveu); só confirma a proposta.
+    toModelOutput: ({ output }) => ({
+      type: "json",
+      value: {
+        proposed: true,
+        summary: output.summary,
+        stats: output.stats,
+        note: "Proposta exibida no card; o usuário decide clicar em Aplicar.",
+      },
+    }),
   });
 }

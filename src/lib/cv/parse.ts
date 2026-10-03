@@ -82,7 +82,8 @@ export function parseCv(markdown: string): ParsedCv {
 
   for (const raw of lines) {
     const line = raw.trim();
-    const heading = /^(#{1,3})\s+(.+)$/.exec(line);
+    // `#` = nome, `##` = seção; `###` é entrada dentro da seção (cargo/curso) e fica como conteúdo.
+    const heading = /^(#{1,2})\s+(.+)$/.exec(line);
     if (heading) {
       const title = heading[2].replace(/[*_`]/g, "").trim();
       if (heading[1] === "#" && !name) {

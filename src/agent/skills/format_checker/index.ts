@@ -1,6 +1,6 @@
 import { generateObject, tool } from "ai";
 import { z } from "zod";
-import { agentModel } from "@/agent/models";
+import { skillModel } from "@/agent/models";
 import { hasSection, parseCv, type ParsedCv } from "@/lib/cv/parse";
 import { loadSkillDoc } from "../registry";
 
@@ -104,7 +104,7 @@ export function createFormatChecker(ctx: { cv: string }) {
     inputSchema: z.object({
       focus: z
         .string()
-        .optional()
+        .nullish()
         .describe("Opcional: aspecto específico a verificar (ex.: 'ATS', 'tamanho', 'bullets')"),
     }),
     execute: async ({ focus }) => {
@@ -113,7 +113,7 @@ export function createFormatChecker(ctx: { cv: string }) {
       const deterministic = deterministicChecks(parsed);
 
       const { object: qualitative } = await generateObject({
-        model: agentModel(),
+        model: skillModel(),
         schema: qualitativeSchema,
         prompt: `${doc.instructions}
 
@@ -146,5 +146,19 @@ ${ctx.cv}`,
         topFixes: qualitative.topFixes,
       };
     },
+    // O card recebe o output completo; o modelo só vê o resumo (economia de tokens).
+    toModelOutput: ({ output }) => ({
+      type: "json",
+      value: {
+        score: output.score,
+        summary: output.summary,
+        words: output.stats.words,
+        pages: output.stats.pages,
+        issues: output.checks
+          .filter((c) => c.status !== "pass")
+          .map((c) => `${c.status.toUpperCase()} · ${c.label}: ${c.detail}`),
+        topFixes: output.topFixes,
+      },
+    }),
   });
 }

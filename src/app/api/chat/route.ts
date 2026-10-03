@@ -11,7 +11,8 @@ export async function POST(req: Request) {
 
   const agent = createCvAgent({ cv });
   const result = await agent.stream({
-    messages: await convertToModelMessages(messages),
+    // `tools` aqui é obrigatório para que `toModelOutput` enxugue os resultados antigos do histórico.
+    messages: await convertToModelMessages(messages, { tools: agent.tools }),
   });
 
   return createUIMessageStreamResponse({

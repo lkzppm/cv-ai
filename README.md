@@ -164,6 +164,24 @@ spec/                 base de conhecimento do projeto (leia primeiro)
 | `GROQ_API_KEY` | — | obrigatória |
 | `GROQ_MODEL` | `openai/gpt-oss-120b` | modelo do agente (precisa de tool calling) |
 | `GROQ_SEARCH_MODEL` | `openai/gpt-oss-120b` | modelo com `browser_search` para o `role_matcher` |
+| `GROQ_SKILL_MODEL` | = `GROQ_MODEL` | modelo das chamadas internas do `format_checker` / `cv_scorer` (a Groq limita tokens/min por modelo) |
+
+## Testar as skills sem o navegador
+
+```bash
+pnpm smoke format      # cenários: hello · format · score · analyze · role · rolelink · edit
+pnpm skill cv_scorer '{"targetRole":"Engenheira de Software Pleno","jobKeywords":null}'
+```
+
+`pnpm smoke` roda o agente completo (decisão de skill + resposta) e imprime as tool calls;
+`pnpm skill` executa uma skill isolada, útil para depurar schema e prompt.
+
+### Sobre latência no free tier da Groq
+
+O plano gratuito permite **8 000 tokens/min** no `openai/gpt-oss-120b`. Uma análise completa
+(`format_checker` + `cv_scorer`) consome ~12–15 mil tokens entre o agente e as chamadas internas,
+então o SDK espera o `retry-after` (10–45 s) entre passos. O modelo em si responde em 1–5 s.
+Para demonstrar sem esperas, ative o Dev Tier em https://console.groq.com/settings/billing.
 
 ## Referências
 

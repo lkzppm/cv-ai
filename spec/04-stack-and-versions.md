@@ -56,3 +56,8 @@ pnpm exec tsc --noEmit
 - AI Elements: https://elements.ai-sdk.dev · repo: https://github.com/vercel/ai-elements
 - vgpu: https://github.com/vercel-labs/vgpu
 - Next.js docs locais (versão exata): `node_modules/next/dist/docs/`
+
+## Scripts de teste (adicionado 2026-10-03)
+
+- `tsx` (devDependency) roda `scripts/smoke.mts` (agente completo por cenário) e `scripts/skill.mts` (uma skill isolada) com `--env-file=.env.local`. Arquivos `.mts` porque o `tsx` compila `.ts` como CJS e rejeita top-level `await`.
+- `pnpm approve-builds esbuild` foi necessário uma vez (pnpm 11 bloqueia scripts de pós-instalação por padrão).

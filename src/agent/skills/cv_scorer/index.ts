@@ -1,6 +1,6 @@
 import { generateObject, tool } from "ai";
 import { z } from "zod";
-import { agentModel } from "@/agent/models";
+import { skillModel } from "@/agent/models";
 import { parseCv } from "@/lib/cv/parse";
 import { loadSkillDoc } from "../registry";
 
@@ -22,7 +22,8 @@ export const scoreSchema = z.object({
       priority: z.number().int().min(1),
       section: z.string(),
       action: z.string(),
-      example: z.string().optional().describe("Exemplo reescrito, se aplicável"),
+      // Structured outputs da Groq exigem todas as chaves em `required`: use nullable, nunca optional.
+      example: z.string().nullable().describe("Exemplo reescrito, ou null se não aplicável"),
     }),
   ).max(5),
   missingKeywords: z.array(z.string()).max(15),
@@ -43,15 +44,15 @@ export function createCvScorer(ctx: { cv: string }) {
   return tool({
     description: doc.description,
     inputSchema: z.object({
-      targetRole: z.string().optional().describe("Cargo-alvo para a dimensão Relevância, ex.: 'Engenheira de Software Pleno'"),
-      jobKeywords: z.array(z.string()).optional().describe("Keywords vindas do role_matcher, se já executado"),
+      targetRole: z.string().nullish().describe("Cargo-alvo para a dimensão Relevância, ex.: 'Engenheira de Software Pleno'"),
+      jobKeywords: z.array(z.string()).nullish().describe("Keywords vindas do role_matcher, se já executado"),
     }),
     execute: async ({ targetRole, jobKeywords }) => {
       if (!ctx.cv.trim()) throw new Error("O CV está vazio. Peça ao usuário para colar ou enviar o currículo.");
       const parsed = parseCv(ctx.cv);
 
       const { object } = await generateObject({
-        model: agentModel(),
+        model: skillModel(),
         schema: scoreSchema,
         prompt: `${doc.instructions}
 
@@ -64,7 +65,7 @@ Dados extraídos automaticamente (use como evidência):
 - ${parsed.actionVerbBullets} bullets com verbo de ação, ${parsed.quantifiedBullets} quantificados
 - Seções: ${parsed.sections.map((s) => s.title).join(" | ") || "nenhuma detectada"}
 
-Regras: use os pesos ${JSON.stringify(WEIGHTS)}; seja específico (cite trechos); respostas em português; "example" deve ser um bullet reescrito real quando a ação for reescrever.
+Regras: cada dimensão recebe "score" de 0 a 100 (NÃO é o peso; o peso só informa a importância: ${JSON.stringify(WEIGHTS)}); copie o peso no campo "weight"; seja específico (cite trechos); respostas em português; "example" deve ser um bullet reescrito real quando a ação for reescrever.
 
 ### CV
 ${ctx.cv}`,
@@ -79,5 +80,19 @@ ${ctx.cv}`,
 
       return { ...object, overall, band, dimensions: object.dimensions.map((d) => ({ ...d, weight: WEIGHTS[d.name] ?? d.weight })) };
     },
+    // O card recebe tudo; o modelo só vê o essencial para comentar.
+    toModelOutput: ({ output }) => ({
+      type: "json",
+      value: {
+        overall: output.overall,
+        band: output.band,
+        verdict: output.verdict,
+        dimensions: output.dimensions.map((d) => `${d.name}: ${d.score}/100`),
+        strengths: output.strengths,
+        weaknesses: output.weaknesses,
+        improvementPlan: output.improvementPlan.map((p) => `${p.priority}. [${p.section}] ${p.action}`),
+        missingKeywords: output.missingKeywords,
+      },
+    }),
   });
 }

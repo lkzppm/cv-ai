@@ -25,7 +25,10 @@ src/agent/skills/<nome>/
 ```
 
 - `description` da tool vem do frontmatter (uma fonte só).
-- O corpo do SKILL.md é injetado no system prompt dentro de `<skill name="...">…</skill>` por `skillsPromptBlock()`.
+- O corpo do SKILL.md é injetado no system prompt dentro de `<skill name="...">…</skill>` por `skillsPromptBlock()` — **só as seções que o agente precisa** (`Quando usar`, `Como apresentar`, `Regras`). Seções internas (`Padrões de referência`, `Rubrica`, `Faixas`, `Como funciona`) ficam fora do prompt do agente e entram apenas nas chamadas internas da skill (`doc.instructions`). Ver `agentFacing()` em `registry.ts`. Decidido em 2026-10-03 para caber no free tier da Groq (8k tokens/min).
+- **Inputs opcionais usam `.nullish()`, nunca `.optional()`**: o `gpt-oss` envia `null` em campos que não preenche e `.optional()` rejeita (`expected string, but got null`). Normalize com `?? []` no `execute`.
+- **Schemas de `generateObject` não podem ter `.optional()`**: a Groq usa structured outputs estritos e exige todas as chaves em `required`. Use `.nullable()`.
+- **`toModelOutput`**: cada tool devolve ao modelo uma versão enxuta do resultado (sem fontes, sem rationales longos, sem o CV inteiro do `cv_editor`). O card da UI continua recebendo o output completo. Para isso funcionar no histórico, `route.ts` chama `convertToModelMessages(messages, { tools: agent.tools })`.
 - `execute` roda no servidor e pode chamar o modelo de novo (`generateObject`, `generateText` + `browser_search`).
 - O resultado deve ser **JSON serializável e estável**: o cliente tem um card por skill (`components/workspace/tool-cards/`).
 - Erros: `throw new Error("mensagem para o usuário")` → vira `output-error` no card e o modelo explica.
@@ -66,9 +69,12 @@ src/agent/skills/<nome>/
 
 ## Modelos Groq testáveis (2026-10)
 
-| Modelo | Tool calling | Reasoning | browser_search | Uso |
+Modelos de texto disponíveis na conta em 2026-10-03 (`GET /openai/v1/models`): `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, `qwen/qwen3.8-27b`. Os Llama 3.x e Kimi foram descontinuados.
+
+| Modelo | Tool calling | Reasoning | browser_search | Resultado do teste (2026-10-03) |
 |---|---|---|---|---|
-| `openai/gpt-oss-120b` | ✔ | ✔ | ✔ | padrão (agente + busca) |
-| `openai/gpt-oss-20b` | ✔ | ✔ | ✔ | mais rápido/barato |
-| `llama-3.3-70b-versatile` | ✔ | – | – | alternativa sem reasoning |
-| `moonshotai/kimi-k2-instruct-0905` | ✔ | – | – | bom em escrita |
+| `openai/gpt-oss-120b` | ✔ | ✔ | ✔ | **padrão**; único confiável em todas as skills |
+| `openai/gpt-oss-20b` | ✔ | ✔ | ✔ | falhou no `cv_scorer` (gerou `"4"` string onde o schema pede inteiro) |
+| `qwen/qwen3.8-27b` | ✔ | ✔ | – | funciona no `cv_scorer`, mas o free tier limita a 1 000 tokens de saída/min — inviável |
+
+Limites do free tier observados: `gpt-oss-120b` 8 000 tokens/min (por modelo). Uma análise completa usa ~12–15k tokens; o SDK honra o `retry-after` automaticamente (até ~45 s). `GROQ_SKILL_MODEL` permite mover as chamadas internas para outro modelo e dobrar o orçamento, mas nenhum alternativo passou no teste.

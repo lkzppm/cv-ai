@@ -9,7 +9,7 @@
 - [x] Fundo WebGPU "papers" (folhas de CV esboçadas em SDF, vgpu + `@vgpu/wgsl-std`) com fallback CSS; tema escuro padrão + claro
 - [x] Redesign v2 → v3 (2026-10-03): painéis glass, toolbar em pílula, animações motion, skills sem botões; paleta final "Azure" (azul); fundo evoluiu fluido → aurora → papers (v4)
 - [x] `pnpm build` passando
-- [ ] **Testar com uma chave Groq real** (fluxo end-to-end das 4 skills) — próximo passo obrigatório
+- [x] **Testado com chave Groq real** (2026-10-03): 4 skills + 7 cenários via `pnpm smoke`. Bugs corrigidos: `null` em inputs opcionais (`.nullish()`), schema do `cv_scorer` rejeitado pelo structured output estrito (`.nullable()`), modelo inventava nota quando a skill falhava (regra no prompt), `###` contado como seção no parser, resposta do `cv_editor` mandava "copiar" em vez de clicar em Aplicar. Latência dominada pelo rate limit de 8k tokens/min: prompt do agente enxugado (8,6k → 6,1k chars) e `toModelOutput` nas 4 tools (13k → 8k chars no passo final; cenário "nota" 125 s → 57 s).
 - [x] Lint e `tsc` sem erros (AI Elements gerados são ignorados pelo ESLint)
 
 ## Próximos passos sugeridos
@@ -21,6 +21,7 @@
 5. **Avaliação das skills**: conjunto de CVs de teste + notas esperadas; medir estabilidade do `cv_scorer` (repetir 5x e ver variância).
 6. **Skill `cover_letter`** e **skill `interview_prep`** (gera perguntas prováveis a partir da vaga).
 7. **Rate limiting** no `/api/chat` antes de publicar.
+8. **Latência no free tier**: cache do resultado do `format_checker` por hash do CV (evita recomputar quando o usuário só pede a nota em seguida) e/ou Dev Tier da Groq.
 
 ## Riscos conhecidos
 

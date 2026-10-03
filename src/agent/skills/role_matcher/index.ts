@@ -7,10 +7,10 @@ import { loadSkillDoc } from "../registry";
 export const roleMatchSchema = z.object({
   roles: z.array(
     z.object({
-      url: z.string().optional(),
+      url: z.string().nullish(),
       title: z.string(),
-      company: z.string().optional(),
-      seniority: z.string().optional(),
+      company: z.string().nullish(),
+      seniority: z.string().nullish(),
       mustHave: z.array(z.string()),
       niceToHave: z.array(z.string()),
       atsKeywords: z.array(z.string()),
@@ -57,13 +57,15 @@ export function createRoleMatcher(ctx: { cv: string }) {
   return tool({
     description: doc.description,
     inputSchema: z.object({
-      jobUrls: z.array(z.string().url()).default([]).describe("Links das vagas (LinkedIn, Gupy, etc.)"),
+      jobUrls: z.array(z.string().url()).nullish().describe("Links das vagas (LinkedIn, Gupy, etc.)"),
       roleQuery: z
         .string()
-        .optional()
+        .nullish()
         .describe("Cargo/empresa desejados quando não há link, ex.: 'Engenheiro de Dados Pleno em fintech'"),
     }),
-    execute: async ({ jobUrls, roleQuery }) => {
+    execute: async ({ jobUrls: urls, roleQuery }) => {
+      // gpt-oss envia `null` em campos opcionais; normalizamos aqui.
+      const jobUrls = urls ?? [];
       if (jobUrls.length === 0 && !roleQuery) {
         throw new Error("Informe ao menos um link de vaga ou um cargo-alvo.");
       }
@@ -128,5 +130,23 @@ Regras: "matched" = requisitos que o CV já evidencia; "missing" = requisitos au
       }
       return { ok: true as const, ...validated.data, roundsRun: rounds.length };
     },
+    // Fontes e texto bruto ficam só no card; o modelo recebe requisitos + match.
+    toModelOutput: ({ output }) => ({
+      type: "json",
+      value: output.ok
+        ? {
+            ok: true,
+            roles: output.roles.map((r) => ({
+              title: r.title,
+              company: r.company ?? null,
+              seniority: r.seniority ?? null,
+              mustHave: r.mustHave,
+              niceToHave: r.niceToHave.slice(0, 8),
+              atsKeywords: r.atsKeywords.slice(0, 25),
+            })),
+            match: output.match,
+          }
+        : { ok: false, note: "A síntese não validou; o card mostra o texto bruto.", raw: output.raw.slice(0, 1500) },
+    }),
   });
 }
