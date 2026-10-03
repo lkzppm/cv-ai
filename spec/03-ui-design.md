@@ -67,6 +67,8 @@ Fundo temático e discreto: **folhas de currículo esboçadas** (contorno arredo
 
 - **Markdown das respostas** (`.chat-md` em `globals.css`, aplicado ao `MessageResponse`/Streamdown): `streamdown/styles.css` importado e `@source` dos pacotes Streamdown para o Tailwind gerar as classes; estilos por `data-streamdown="…"`: títulos e cabeçalhos de tabela em `--primary`, bullets como pontos azuis, numeração azul, tabelas dentro do wrapper com borda `glass-border`, inline code azul claro. Respiro de 0,65rem entre blocos e listas com `padding-left` para os marcadores não colarem na borda da bolha.
 - **Mensagem do usuário** sempre branca sobre o azul (`text-white` + regras `.is-user .chat-md`), nos dois temas.
+- **Auto-scroll**: `AutoScroll` (dentro do `Conversation`) chama `scrollToBottom` quando a contagem de mensagens muda ou o status vira `submitted`; o `use-stick-to-bottom` só acompanha o streaming se já estava no fim, por isso o empurrão ao enviar.
+- **Raciocínio**: um bloco por passo do gpt-oss. Blocos vazios são omitidos; os demais viram uma linha pequena "Pensou por Ns" / "Pensando…" (pt-BR) sem margens, para a timeline reasoning → skill → tool ter ritmo uniforme (`gap-2`).
 - **Skill carregada vs tool executada** (`skill-activity.tsx`): `SkillLoadedRow` (linha tracejada azul, ícone da skill, "instruções carregadas", expande para ler o SKILL.md) para `tool-load_skill`; `SkillToolHeader` (card sólido, tag TOOL, pílula de estado pt-BR: preparando / executando / concluída / erro) para as demais. O indicador flutuante diz "carregando skill X" ou "executando tool X".
 
 ## Referências de design

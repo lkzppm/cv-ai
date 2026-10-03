@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { AnimatePresence, motion } from "motion/react";
+import { useStickToBottomContext } from "use-stick-to-bottom";
 import type { CvAgentUIMessage } from "@/agent";
 import { Conversation, ConversationContent, ConversationScrollButton } from "@/components/ai-elements/conversation";
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
@@ -84,6 +85,7 @@ export function AgentSidebar() {
       </AnimatePresence>
 
       <Conversation className="scrollbar-none min-h-0 flex-1">
+        <AutoScroll count={messages.length} status={status} />
         <ConversationContent className="gap-5 p-4">
           {messages.length === 0 && <EmptyHero cv={cvStats} onExample={(t) => composerRef.current?.setText(t)} />}
           <AnimatePresence initial={false}>
@@ -111,10 +113,12 @@ export function AgentSidebar() {
                             </MessageResponse>
                           );
                         case "reasoning":
+                          // Blocos vazios (o gpt-oss emite um por passo) só poluem a timeline.
+                          if (part.state !== "streaming" && !part.text.trim()) return null;
                           return (
-                            <Reasoning key={i} isStreaming={part.state === "streaming"}>
-                              <ReasoningTrigger />
-                              <ReasoningContent>{part.text}</ReasoningContent>
+                            <Reasoning key={i} isStreaming={part.state === "streaming"} className="mb-0">
+                              <ReasoningTrigger className="w-fit py-0.5 text-xs" getThinkingMessage={thinkingMessage} />
+                              <ReasoningContent className="mt-1.5 border-l-2 border-glass-border pl-3 text-xs">{part.text}</ReasoningContent>
                             </Reasoning>
                           );
                         case "tool-load_skill":
@@ -149,7 +153,7 @@ export function AgentSidebar() {
                               animate={{ opacity: 1, scale: 1 }}
                               transition={{ type: "spring", stiffness: 300, damping: 26 }}
                             >
-                              <Tool defaultOpen={part.state === "output-available" || part.state === "output-error"} className="gradient-border rounded-2xl">
+                              <Tool defaultOpen={part.state === "output-available" || part.state === "output-error"} className="gradient-border mb-0 rounded-2xl">
                                 <SkillToolHeader name={part.type.replace("tool-", "")} state={part.state} subtitle={SKILL_SUBTITLES[part.type]} />
                                 <ToolContent>
                                   {part.state === "input-streaming" && <Shimmer>Preparando a skill…</Shimmer>}
@@ -196,6 +200,28 @@ export function AgentSidebar() {
 }
 
 type SkillPart = Extract<CvAgentUIMessage["parts"][number], { type: `tool-${string}` }>;
+
+/**
+ * O StickToBottom só acompanha se o usuário já estava no fim. Ao enviar uma
+ * mensagem (ou quando o agente começa a responder) forçamos o scroll; a partir
+ * daí o "stick" segue o streaming sozinho.
+ */
+function AutoScroll({ count, status }: { count: number; status: string }) {
+  const { scrollToBottom } = useStickToBottomContext();
+  useEffect(() => {
+    if (count > 0) void scrollToBottom({ animation: "smooth" });
+  }, [count, scrollToBottom]);
+  useEffect(() => {
+    if (status === "submitted") void scrollToBottom({ animation: "smooth" });
+  }, [status, scrollToBottom]);
+  return null;
+}
+
+function thinkingMessage(isStreaming: boolean, duration?: number) {
+  if (isStreaming || duration === 0) return <Shimmer duration={1}>Pensando…</Shimmer>;
+  if (duration === undefined) return <span>Raciocínio</span>;
+  return <span>Pensou por {duration}s</span>;
+}
 
 /** O que o agente está fazendo agora: carregando uma skill ou executando uma tool. */
 function findActivity(messages: CvAgentUIMessage[]): { kind: "load" | "tool"; name: string } | null {
