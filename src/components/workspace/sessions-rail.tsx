@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { PlusIcon, Trash2Icon, PencilIcon, CheckIcon, FileTextIcon, MessageSquareIcon } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -55,14 +55,7 @@ export function SessionsRail() {
                       active ? "bg-accent/80" : "hover:bg-accent/40",
                     )}
                   >
-                    {active && (
-                      <motion.span
-                        layoutId="session-active-bar"
-// barra sólida com pontas redondas, recuada para caber dentro da curva do canto
-                        className="pointer-events-none absolute top-[9px] bottom-[9px] left-[5px] w-[3px] rounded-full bg-primary"
-                        transition={{ type: "spring", stiffness: 500, damping: 40 }}
-                      />
-                    )}
+                    {active && <ActiveBracket />}
 
                     <button
                       onClick={() => setActive(s.id)}
@@ -140,6 +133,56 @@ export function SessionsRail() {
         </ScrollArea>
       </div>
     </TooltipProvider>
+  );
+}
+
+/**
+ * Indicador da sessão ativa: um "C" de 3px que abraça a borda esquerda do
+ * item seguindo o raio do canto (rounded-xl = 12px), com pontas redondas e
+ * espessura uniforme. Desenhado em SVG com a altura real do item.
+ */
+function ActiveBracket() {
+  const ref = useRef<SVGSVGElement>(null);
+  const [h, setH] = useState(0);
+
+  useEffect(() => {
+    const el = ref.current?.parentElement;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => setH(entry.contentRect.height));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const r = 12; // raio do canto do item
+  const sw = 3; // espessura
+  const c = sw / 2; // deslocamento até a linha central do traço
+  const cr = r - c; // raio da linha central
+  const arm = 4; // braço horizontal do "C"
+  const d =
+    h > 2 * r
+      ? `M ${r + arm} ${c} H ${r} A ${cr} ${cr} 0 0 0 ${c} ${r} V ${h - r} A ${cr} ${cr} 0 0 0 ${r} ${h - c} H ${r + arm}`
+      : "";
+
+  return (
+    <motion.svg
+      ref={ref}
+      layoutId="session-active-bracket"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ type: "spring", stiffness: 500, damping: 40 }}
+      className="pointer-events-none absolute top-0 left-0 h-full text-primary"
+      width={r + arm + sw}
+      height={h || undefined}
+      viewBox={`0 0 ${r + arm + sw} ${Math.max(h, 1)}`}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={sw}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {d && <path d={d} />}
+    </motion.svg>
   );
 }
 
