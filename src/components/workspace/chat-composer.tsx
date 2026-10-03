@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "motion/react";
 import { ArrowUpIcon, SquareIcon } from "lucide-react";
 import type { ChatStatus } from "ai";
 import { Spinner } from "@/components/ui/spinner";
-import { AGENT_MODEL_LABEL } from "@/lib/skills-meta";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -70,25 +69,7 @@ export function ChatComposer({ status, onSend, onStop, placeholder }: Props) {
         className="block w-full resize-none bg-transparent py-2.5 pr-12 text-[14px] leading-6 text-foreground outline-none placeholder:text-muted-foreground/70"
       />
 
-      <div className="mt-1 flex items-center justify-between pb-0.5">
-        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-          <span className="rounded-full border border-glass-border bg-background/40 px-2 py-0.5 font-mono text-[10.5px]">
-            {AGENT_MODEL_LABEL}
-          </span>
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.span
-              key={busy ? "busy" : focused ? "hint" : "idle"}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.18 }}
-              className="hidden sm:inline"
-            >
-              {busy ? "gerando resposta…" : focused ? "Enter envia · Shift+Enter quebra linha" : "o agente escolhe a skill"}
-            </motion.span>
-          </AnimatePresence>
-        </div>
-
+      <div className="mt-1 flex items-center justify-end pb-0.5">
         <motion.button
           type="button"
           whileTap={{ scale: 0.92 }}
