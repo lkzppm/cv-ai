@@ -5,7 +5,6 @@ import { AnimatePresence, motion } from "motion/react";
 import { InfoIcon, SparklesIcon, LayersIcon, BotIcon, ExternalLinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { CvAgentIcon } from "@/components/brand/cv-agent-icon";
 import { SKILLS_META } from "@/lib/skills-meta";
 import { cn } from "@/lib/utils";
 
@@ -45,12 +44,6 @@ export function AboutDialog() {
         <div className="grid min-h-[440px] grid-cols-[180px_1fr]">
           {/* sub-menu */}
           <nav className="flex flex-col gap-1 border-r border-glass-border bg-background/20 p-3">
-            <div className="mb-3 flex items-center gap-2 px-2 pt-1">
-              <CvAgentIcon className="size-6 text-primary" />
-              <span className="text-sm font-semibold tracking-tight">
-                CV<span className="text-gradient">Agent</span>
-              </span>
-            </div>
             {SECTIONS.map((s) => {
               const active = s.key === section;
               return (
