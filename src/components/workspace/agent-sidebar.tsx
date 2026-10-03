@@ -4,7 +4,8 @@ import { useEffect, useMemo } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { AnimatePresence, motion } from "motion/react";
-import { SparklesIcon, SearchIcon, ListChecksIcon, GaugeIcon, Wand2Icon } from "lucide-react";
+import { SearchIcon, ListChecksIcon, GaugeIcon, Wand2Icon } from "lucide-react";
+import { CvAgentIcon } from "@/components/brand/cv-agent-icon";
 import type { CvAgentUIMessage } from "@/agent";
 import { Conversation, ConversationContent, ConversationScrollButton } from "@/components/ai-elements/conversation";
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
@@ -92,7 +93,7 @@ function AgentSidebarInner() {
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center gap-2 border-b border-glass-border px-4 py-3">
         <span className="grid size-7 place-items-center rounded-lg bg-accent text-primary">
-          <SparklesIcon className="size-4" />
+          <CvAgentIcon className="size-4.5" />
         </span>
         <div className="text-sm font-semibold">Agente</div>
         <AnimatePresence mode="wait">

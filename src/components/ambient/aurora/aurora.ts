@@ -46,7 +46,8 @@ export function startAurora(options: AuroraOptions): () => void {
         },
       });
       canvasSurface.onResize(() => fx.set({ params: { texel: canvasSurface.texelSize } }));
-      await fx.compile(canvasSurface);
+      // Surfaces só existem dentro de frame(); pré-compila pelo formato da surface.
+      await fx.compile({ colors: [canvasSurface.format] });
       if (disposed) return;
 
       const time = clock(gpu);

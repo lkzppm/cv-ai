@@ -21,7 +21,7 @@ export function AppShell() {
   const hasHydrated = useHydrated();
   const theme = useSessions((s) => s.theme);
   const toggleTheme = useSessions((s) => s.toggleTheme);
-  const [railOpen, setRailOpen] = useState(true);
+  const [railOpen, setRailOpen] = useState(false);
 
   useEffect(() => {
     if (hasHydrated && !session) createSession();
@@ -70,7 +70,7 @@ export function AppShell() {
       <div className="relative z-10 flex min-h-0 flex-1 gap-3 px-3 pb-3">
         <motion.aside
           initial={false}
-          animate={{ width: railOpen ? 248 : 0, opacity: railOpen ? 1 : 0, x: railOpen ? 0 : -12 }}
+          animate={{ width: railOpen ? 248 : 0, opacity: railOpen ? 1 : 0, x: railOpen ? 0 : -12, marginRight: railOpen ? 0 : -12 }}
           transition={{ type: "spring", stiffness: 260, damping: 30 }}
           className="glass shrink-0 overflow-hidden rounded-2xl"
         >
