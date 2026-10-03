@@ -19,7 +19,7 @@ const SECTIONS: { key: SectionKey; label: string; icon: typeof BotIcon }[] = [
 const STACK: { name: string; role: string; href: string }[] = [
   { name: "Next.js 16", role: "App Router, Turbopack e route handlers da API do agente", href: "https://nextjs.org" },
   { name: "Vercel AI SDK 7", role: "ToolLoopAgent, tools tipadas com zod e streaming para o useChat", href: "https://ai-sdk.dev" },
-  { name: "Groq · gpt-oss-120b", role: "Modelo com tool calling, reasoning e busca na web nativa", href: "https://console.groq.com/docs/models" },
+  { name: "Groq · gpt-oss-20b + 120b", role: "20b decide e responde; 120b avalia (skills) e busca na web", href: "https://console.groq.com/docs/models" },
   { name: "AI Elements + shadcn/ui", role: "Componentes de conversa, mensagens, tools e reasoning", href: "https://elements.ai-sdk.dev" },
   { name: "vgpu (WebGPU)", role: "Fundo com documentos esboçados em shader WGSL", href: "https://github.com/vercel-labs/vgpu" },
   { name: "motion", role: "Transições e micro-interações da interface", href: "https://motion.dev" },

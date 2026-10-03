@@ -21,7 +21,7 @@ Interface no estilo *Claude Design* voltada a currículos: o **CV atual fica no 
 | Camada | Tecnologia |
 |---|---|
 | Front/Back | **Next.js 16.3** (App Router, Turbopack, React 19) + TypeScript |
-| LLM | **Groq API** (`openai/gpt-oss-120b`) via `@ai-sdk/groq` |
+| LLM | **Groq API** via `@ai-sdk/groq`: `openai/gpt-oss-20b` no agente, `openai/gpt-oss-120b` nas skills e na busca |
 | Agente | **Vercel AI SDK 7** — `ToolLoopAgent`, streaming para `useChat` |
 | UI | Tailwind v4 · shadcn/ui · **AI Elements** (componentes de chat da Vercel) |
 | Visual | **vgpu** (WebGPU): fundo com folhas de currículo esboçadas (shader `.wgsl` tipado, SDFs + `@vgpu/wgsl-std`) + **motion** para as transições; fallback CSS |
@@ -162,9 +162,9 @@ spec/                 base de conhecimento do projeto (leia primeiro)
 | Nome | Padrão | Descrição |
 |---|---|---|
 | `GROQ_API_KEY` | — | obrigatória |
-| `GROQ_MODEL` | `openai/gpt-oss-120b` | modelo do agente (precisa de tool calling) |
-| `GROQ_SEARCH_MODEL` | `openai/gpt-oss-120b` | modelo com `browser_search` para o `role_matcher` |
-| `GROQ_SKILL_MODEL` | = `GROQ_MODEL` | modelo das chamadas internas do `format_checker` / `cv_scorer` (a Groq limita tokens/min por modelo) |
+| `GROQ_MODEL` | `openai/gpt-oss-20b` | agente: decide a skill e escreve a resposta (precisa de tool calling) |
+| `GROQ_SKILL_MODEL` | `openai/gpt-oss-120b` | chamadas internas do `format_checker` / `cv_scorer` (`generateObject`) |
+| `GROQ_SEARCH_MODEL` | `openai/gpt-oss-120b` | `browser_search` do `role_matcher` |
 
 ## Testar as skills sem o navegador
 
@@ -178,10 +178,19 @@ pnpm skill cv_scorer '{"targetRole":"Engenheira de Software Pleno","jobKeywords"
 
 ### Sobre latência no free tier da Groq
 
-O plano gratuito permite **8 000 tokens/min** no `openai/gpt-oss-120b`. Uma análise completa
-(`format_checker` + `cv_scorer`) consome ~12–15 mil tokens entre o agente e as chamadas internas,
-então o SDK espera o `retry-after` (10–45 s) entre passos. O modelo em si responde em 1–5 s.
-Para demonstrar sem esperas, ative o Dev Tier em https://console.groq.com/settings/billing.
+O plano gratuito permite **8 000 tokens/min por modelo**. Uma análise completa
+(`format_checker` + `cv_scorer`) consome ~12–15 mil tokens, então com um único modelo o SDK
+espera o `retry-after` (10–45 s) entre passos. Por isso o padrão divide o trabalho:
+
+| Cenário | tudo no 120b | agente 20b + skills 120b |
+|---|---|---|
+| Análise completa | 129 s | **20 s** |
+| Reescrever resumo | 60 s | **16 s** |
+| Vaga por cargo (2 buscas) | 64 s | 77 s (a busca em si é lenta) |
+
+O 120b continua nas skills porque o 20b falhou no schema do `cv_scorer` e na síntese do
+`role_matcher`. Para usar só o 120b (respostas um pouco mais elaboradas), defina
+`GROQ_MODEL=openai/gpt-oss-120b` e ative o Dev Tier em https://console.groq.com/settings/billing.
 
 ## Referências
 

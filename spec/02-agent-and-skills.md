@@ -4,7 +4,7 @@
 
 ```ts
 new ToolLoopAgent({
-  model: groq(process.env.GROQ_MODEL ?? "openai/gpt-oss-120b"),
+  model: groq(process.env.GROQ_MODEL ?? "openai/gpt-oss-20b"),
   instructions: buildInstructions(cv),   // persona + regras + <skill> blocks + <cv>
   tools: createSkills({ cv }),           // as 4 skills fechadas sobre o CV
   stopWhen: stepCountIs(8),              // no máx. 8 passos modelo↔tools por mensagem
@@ -73,8 +73,10 @@ Modelos de texto disponíveis na conta em 2026-10-03 (`GET /openai/v1/models`): 
 
 | Modelo | Tool calling | Reasoning | browser_search | Resultado do teste (2026-10-03) |
 |---|---|---|---|---|
-| `openai/gpt-oss-120b` | ✔ | ✔ | ✔ | **padrão**; único confiável em todas as skills |
-| `openai/gpt-oss-20b` | ✔ | ✔ | ✔ | falhou no `cv_scorer` (gerou `"4"` string onde o schema pede inteiro) |
+| `openai/gpt-oss-120b` | ✔ | ✔ | ✔ | **padrão das skills e da busca**; único confiável no `generateObject` e na síntese do `role_matcher` |
+| `openai/gpt-oss-20b` | ✔ | ✔ | ✔ | **padrão do agente** (decide skill + redige); falhou no `cv_scorer` (`"4"` string onde o schema pede inteiro) e na síntese do `role_matcher` |
 | `qwen/qwen3.8-27b` | ✔ | ✔ | – | funciona no `cv_scorer`, mas o free tier limita a 1 000 tokens de saída/min — inviável |
 
-Limites do free tier observados: `gpt-oss-120b` 8 000 tokens/min (por modelo). Uma análise completa usa ~12–15k tokens; o SDK honra o `retry-after` automaticamente (até ~45 s). `GROQ_SKILL_MODEL` permite mover as chamadas internas para outro modelo e dobrar o orçamento, mas nenhum alternativo passou no teste.
+Limites do free tier observados: 8 000 tokens/min **por modelo** (120b, 20b e qwen, cada um com seu balde). Uma análise completa usa ~12–15k tokens; o SDK honra o `retry-after` automaticamente (até ~45 s).
+
+**Decisão 2026-10-03 — divisão agente/skills.** Agente no `gpt-oss-20b` (`GROQ_MODEL`), skills e busca no `gpt-oss-120b` (`GROQ_SKILL_MODEL`, `GROQ_SEARCH_MODEL`). Dobra o orçamento de tokens/min sem perder qualidade onde importa (avaliação estruturada e síntese de busca). Medições com `pnpm smoke`: análise completa 129 s → 20 s, `cv_editor` 60 s → 16 s, `role_matcher` ~igual (a busca domina). Com Dev Tier, `GROQ_MODEL=openai/gpt-oss-120b` dá respostas um pouco mais elaboradas.

@@ -8,8 +8,12 @@ export const groq = createGroq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-/** Modelo principal do agente (tool calling + reasoning). */
-export const AGENT_MODEL_ID = process.env.GROQ_MODEL ?? "openai/gpt-oss-120b";
+/**
+ * Modelo principal do agente (tool calling + reasoning).
+ * Padrão 20b: no free tier da Groq (8k tokens/min POR modelo) separar o agente
+ * das skills dobra o orçamento — análise completa caiu de 129 s para 20 s (2026-10-03).
+ */
+export const AGENT_MODEL_ID = process.env.GROQ_MODEL ?? "openai/gpt-oss-20b";
 
 /** Modelo com a built-in tool `browser_search` da Groq (usado pela skill role_matcher). */
 export const SEARCH_MODEL_ID =
@@ -20,7 +24,7 @@ export const SEARCH_MODEL_ID =
  * A Groq aplica o rate limit POR modelo: usar um modelo diferente do agente
  * dobra o orçamento de tokens/min no free tier.
  */
-export const SKILL_MODEL_ID = process.env.GROQ_SKILL_MODEL ?? AGENT_MODEL_ID;
+export const SKILL_MODEL_ID = process.env.GROQ_SKILL_MODEL ?? "openai/gpt-oss-120b";
 
 export const agentModel = () => groq(AGENT_MODEL_ID);
 export const skillModel = () => groq(SKILL_MODEL_ID);

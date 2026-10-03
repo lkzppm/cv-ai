@@ -26,5 +26,5 @@
 ## Riscos conhecidos
 
 - LinkedIn bloqueia fetch direto; a skill depende do `browser_search` conseguir achar a vaga pelo título/URL. Links do Gupy/Greenhouse costumam abrir.
-- `generateObject` com schemas grandes pode falhar em modelos menores; o `openai/gpt-oss-120b` tem se mostrado estável.
+- `generateObject` com schemas grandes falha em modelos menores (20b gerou string onde o schema pede inteiro); por isso as skills ficam no `openai/gpt-oss-120b` e só o agente roda no 20b.
 - Groq free tier tem limites de tokens/min; `role_matcher` faz 2 buscas + 1 síntese por vaga.
