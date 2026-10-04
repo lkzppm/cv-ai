@@ -65,6 +65,7 @@ export function AgentSidebar() {
   }, [messages, status, session.id, setMessages]);
 
   useAutoHighlights(messages);
+  const clearHighlights = useHighlights((s) => s.clear);
 
   const busy = status === "submitted" || status === "streaming";
   const activity = busy ? findActivity(messages) : null;
@@ -195,7 +196,11 @@ export function AgentSidebar() {
         <ChatComposer
           ref={composerRef}
           status={status}
-          onSend={(text) => sendMessage({ text })}
+          onSend={(text) => {
+            // Nova pergunta, nova "onda" de tools: os destaques da anterior saem do painel.
+            clearHighlights();
+            void sendMessage({ text });
+          }}
           onStop={stop}
           placeholder="Peça uma análise, cole o link de uma vaga ou diga o que mudar…"
         />
