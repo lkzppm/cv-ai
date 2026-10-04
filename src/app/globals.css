@@ -284,19 +284,20 @@
 }
 .collapsible-fluid {
   overflow: hidden;
-  will-change: height, opacity;
 }
-/* !important: sobrescreve o animate-in/out (tw-animate) dos componentes gerados */
+/* Sem !important: o Radix mede a altura zerando a animação por estilo inline,
+   e inline não vence !important (o card ficava preso em altura 0). Este CSS
+   está fora das @layer do Tailwind, então já prevalece sobre o animate-in/out. */
 .collapsible-fluid[data-state="open"] {
-  animation: collapsible-down 0.3s var(--ease-out-expo) !important;
+  animation: collapsible-down 0.3s var(--ease-out-expo);
 }
 .collapsible-fluid[data-state="closed"] {
-  animation: collapsible-up 0.22s ease-in !important;
+  animation: collapsible-up 0.22s ease-in;
 }
 @media (prefers-reduced-motion: reduce) {
   .collapsible-fluid[data-state="open"],
   .collapsible-fluid[data-state="closed"] {
-    animation-duration: 0.01s !important;
+    animation-duration: 0.01s;
   }
 }
 
