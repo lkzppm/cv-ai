@@ -2,13 +2,16 @@
 
 import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { DownloadIcon, PencilIcon, PrinterIcon, UploadIcon, Undo2Icon, Loader2Icon, CheckIcon, XIcon, ScanSearchIcon } from "lucide-react";
+import { DownloadIcon, PencilIcon, PrinterIcon, UploadIcon, Undo2Icon, Loader2Icon, CheckIcon, XIcon, ScanSearchIcon, GitCompareIcon } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useActiveSession, useSessions } from "@/lib/store/sessions";
 import { useHighlights } from "@/lib/store/highlights";
+import { useEditProposal } from "@/lib/store/edit-proposal";
 import { CvMarkdown } from "./cv-markdown";
 import { CvHighlightLayer } from "./cv-highlights";
+import { CvDiffView } from "./cv-diff-view";
+import { countChanges, diffCv } from "@/lib/cv/diff";
 import { parseCv } from "@/lib/cv/parse";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +26,9 @@ export function CvPanel() {
   const fileRef = useRef<HTMLInputElement>(null);
   const pinned = useHighlights((s) => s.pinned);
   const clearHighlights = useHighlights((s) => s.clear);
+  const pending = useEditProposal((s) => s.pending);
+  const dismissProposal = useEditProposal((s) => s.dismiss);
+  const pendingChanges = pending ? countChanges(diffCv(session.cv, pending.newCv)) : 0;
 
   const stats = parseCv(session.cv);
   const version = session.cvHistory.length + 1;
@@ -74,7 +80,38 @@ export function CvPanel() {
         <span className="opacity-60">·</span>
         <span>~{stats.estimatedPages} pág.</span>
         <AnimatePresence>
-          {pinned && mode === "view" && (
+          {pending && mode === "view" && (
+            <motion.span
+              key="edit-bar"
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              className="ml-2 flex items-center gap-1 rounded-full border border-dashed border-warning/60 bg-warning/[0.08] py-0.5 pr-0.5 pl-2 text-warning"
+            >
+              <GitCompareIcon className="size-3" />
+              <span>
+                revisão do cv_editor · {pendingChanges} {pendingChanges === 1 ? "bloco" : "blocos"}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setCv(pending.newCv);
+                  dismissProposal();
+                }}
+                className="ml-1 rounded-full bg-success/15 px-2 py-0.5 font-medium text-success transition-colors hover:bg-success/25"
+              >
+                aceitar tudo
+              </button>
+              <button
+                type="button"
+                onClick={dismissProposal}
+                className="rounded-full bg-destructive/10 px-2 py-0.5 font-medium text-destructive transition-colors hover:bg-destructive/20"
+              >
+                recusar tudo
+              </button>
+            </motion.span>
+          )}
+          {pinned && !pending && mode === "view" && (
             <motion.button
               key="hl-chip"
               type="button"
@@ -115,7 +152,9 @@ export function CvPanel() {
         <AnimatePresence mode="wait" initial={false}>
           {mode === "view" ? (
             <motion.div key="view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-              {session.cv.trim() ? (
+              {pending ? (
+                <CvDiffView current={session.cv} pending={pending} />
+              ) : session.cv.trim() ? (
                 <CvHighlightLayer markdown={session.cv}>
                   <CvMarkdown markdown={session.cv} />
                 </CvHighlightLayer>

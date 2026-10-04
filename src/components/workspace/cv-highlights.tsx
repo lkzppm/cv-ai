@@ -4,9 +4,10 @@ import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { normalizeCvText, type CvHighlight, type CvRef } from "@/lib/cv/refs";
 import { sectionKindOf } from "@/lib/cv/parse";
-import { selectVisible, useHighlights } from "@/lib/store/highlights";
+import { highlightKey, selectVisible, useHighlights } from "@/lib/store/highlights";
+import { revealInChat } from "@/lib/reveal";
 
-type Box = { key: string; top: number; left: number; width: number; height: number; label?: string; tone?: CvHighlight["tone"] };
+type Box = { key: string; itemKey: string; top: number; left: number; width: number; height: number; label?: string; tone?: CvHighlight["tone"] };
 
 const PAD_X = 8;
 const PAD_Y = 4;
@@ -61,6 +62,9 @@ export function CvHighlightLayer({ markdown, children }: { markdown: string; chi
             key={b.key}
             data-tone={b.tone ?? "primary"}
             className="cv-highlight"
+            role="button"
+            title="Ver no chat"
+            onClick={() => revealInChat(b.itemKey, pinned?.toolCallId)}
             initial={{ opacity: 0, scale: 0.985 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.985 }}
@@ -85,6 +89,7 @@ function measure(container: HTMLElement, items: CvHighlight[]): Box[] {
       const rect = union(els.map((e) => e.getBoundingClientRect()));
       out.push({
         key: `${i}:${j}:${r.kind}:${"text" in r ? r.text : "title" in r ? r.title : ""}`,
+        itemKey: highlightKey(item),
         top: rect.top - base.top - PAD_Y,
         left: rect.left - base.left - PAD_X,
         width: rect.width + PAD_X * 2,

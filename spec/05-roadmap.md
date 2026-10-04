@@ -16,11 +16,12 @@
 
 - [x] Branches `main` ← `dev` ← `feat/*`; CI no GitHub Actions (lint, `next typegen` + tsc, build) em push/PR para `main` e `dev`. Deploy futuro: Vercel.
 - [x] **Tools interativas com o CV** (`feat/cv-highlights`): cada tool devolve `CvRef[]` e o painel desenha retângulos tracejados nas partes citadas (várias ao mesmo tempo); hover/clique no card foca um item; fixação automática ao terminar a tool. `format_checker` passou a avaliar verbo de ação/quantificação só nos bullets de experiência/projetos.
+- [x] **Revisão do `cv_editor` em diff** (`feat/edit-review`): antes/depois por bloco dentro do painel, aceitar/recusar por bloco e no total; clicar numa marcação do CV leva ao item no chat.
 
 ## Próximos passos sugeridos
 
 1. **Drawer da sidebar em telas < lg** (hoje fica oculta).
-2. **Diff visual** no card do `cv_editor` (antes/depois por linha) — o destaque "vai mudar" já mostra o *antes*; falta o *depois* lado a lado.
+2. **Diff por palavra** dentro de um bloco do `cv_editor` (hoje o diff é por linha; um bullet reescrito aparece inteiro riscado + inteiro novo).
 3. **Exportar PDF com layout** (ex.: `@react-pdf/renderer` ou print CSS mais refinado).
 4. **Persistência real** (Postgres + Drizzle) e login — permitiria compartilhar sessões.
 5. **Avaliação das skills**: conjunto de CVs de teste + notas esperadas; medir estabilidade do `cv_scorer` (repetir 5x e ver variância).

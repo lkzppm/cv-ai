@@ -112,7 +112,7 @@ function Overview() {
         {[
           ["Você fala, ele decide", "Não há botões de skill. O agente interpreta o pedido, carrega as instruções da skill (SKILL.md) e só então executa a tool — você vê os dois momentos no chat."],
           ["O CV é o contexto", "O documento do painel é enviado a cada mensagem; edições feitas por você valem na hora. As tools apontam no CV, com retângulos tracejados, cada trecho que citam."],
-          ["Nada muda sem você", "Propostas do cv_editor aparecem em um card com Pré-visualizar e Aplicar, e dá para desfazer."],
+          ["Nada muda sem você", "Propostas do cv_editor viram um diff no próprio CV: você aceita ou recusa bloco a bloco, e dá para desfazer."],
         ].map(([t, d], i) => (
           <li key={t} className="flex gap-3 rounded-2xl border border-glass-border bg-background/30 p-3">
             <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">{i + 1}</span>

@@ -11,7 +11,7 @@ import type { CvHighlight } from "@/lib/cv/refs";
  *  2. `focused` — item clicado no card (fica até clicar de novo ou limpar);
  *  3. `pinned`  — tudo que a última tool mencionou (fixado quando a tool termina).
  */
-type PinnedSet = { source: string; items: CvHighlight[] };
+type PinnedSet = { source: string; items: CvHighlight[]; toolCallId?: string };
 
 type State = {
   pinned: PinnedSet | null;
@@ -20,7 +20,7 @@ type State = {
 };
 
 type Actions = {
-  pin: (source: string, items: CvHighlight[]) => void;
+  pin: (source: string, items: CvHighlight[], toolCallId?: string) => void;
   toggleFocus: (item: CvHighlight) => void;
   setHover: (item: CvHighlight | null) => void;
   clear: () => void;
@@ -34,8 +34,8 @@ export const useHighlights = create<State & Actions>()((set, get) => ({
   focusedKey: null,
   hover: null,
 
-  pin: (source, items) =>
-    set({ pinned: items.length ? { source, items } : null, focusedKey: null, hover: null }),
+  pin: (source, items, toolCallId) =>
+    set({ pinned: items.length ? { source, items, toolCallId } : null, focusedKey: null, hover: null }),
   toggleFocus: (item) => {
     const key = highlightKey(item);
     const { pinned, focusedKey } = get();
