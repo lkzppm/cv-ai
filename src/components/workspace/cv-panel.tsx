@@ -13,21 +13,27 @@ import { CvHighlightLayer } from "./cv-highlights";
 import { CvDiffView } from "./cv-diff-view";
 import { countChanges, diffCv } from "@/lib/cv/diff";
 import { parseCv } from "@/lib/cv/parse";
+import { CV_FILE_ACCEPT, parseCvFile } from "@/lib/cv/upload";
 import { cn } from "@/lib/utils";
 
 /** Painel principal: o CV atual como folha flutuante, com toolbar em pílula. */
 export function CvPanel() {
-  const session = useActiveSession()!;
+  // Pode ficar nulo por um instante: a última sessão excluída enquanto o painel
+  // ainda anima a saída (AnimatePresence). Todos os hooks vêm antes do guard.
+  const session = useActiveSession();
   const setCv = useSessions((s) => s.setCv);
   const undoCv = useSessions((s) => s.undoCv);
-  const [mode, setMode] = useState<"view" | "edit">("view");
-  const [draft, setDraft] = useState(session.cv);
+  // CV vazio (sessão "Colar o texto") já abre no editor.
+  const [mode, setMode] = useState<"view" | "edit">(session?.cv.trim() ? "view" : "edit");
+  const [draft, setDraft] = useState(session?.cv ?? "");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const pinned = useHighlights((s) => s.pinned);
   const clearHighlights = useHighlights((s) => s.clear);
   const pending = useEditProposal((s) => s.pending);
   const dismissProposal = useEditProposal((s) => s.dismiss);
+
+  if (!session) return null;
   const pendingChanges = pending ? countChanges(diffCv(session.cv, pending.newCv)) : 0;
 
   const stats = parseCv(session.cv);
@@ -45,13 +51,7 @@ export function CvPanel() {
   const onUpload = async (file: File) => {
     setUploading(true);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("format", "1");
-      const res = await fetch("/api/parse-cv", { method: "POST", body: fd });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Falha ao ler arquivo");
-      setCv(data.markdown ?? data.text);
+      setCv(await parseCvFile(file));
       setMode("view");
     } catch (e) {
       alert((e as Error).message);
@@ -190,7 +190,7 @@ export function CvPanel() {
           <input
             ref={fileRef}
             type="file"
-            accept=".pdf,.md,.txt,text/plain,text/markdown,application/pdf"
+            accept={CV_FILE_ACCEPT}
             className="hidden"
             onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])}
           />

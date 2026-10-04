@@ -72,6 +72,10 @@ Fundo temático e discreto: **folhas de currículo esboçadas** (contorno arredo
 - **Colapsáveis fluidos** (`.collapsible-fluid` em `globals.css`): keyframes de altura via `--radix-collapsible-content-height` + fade; usado em skill, tool e raciocínio. **Nunca use `!important` nessa animação**: o Radix mede a altura zerando `animation-name` por estilo inline, e inline não vence `!important` — o conteúdo era medido com altura 0 e ficava preso (bug de 2026-10-04). O CSS fica fora das `@layer` do Tailwind, o que já basta para vencer o `animate-in/out` dos componentes gerados. Respeita `prefers-reduced-motion`.
 - **Skill carregada vs tool executada** (`skill-activity.tsx`): `SkillLoadedRow` (linha tracejada azul, ícone da skill, "instruções carregadas", expande para ler o SKILL.md) para `tool-load_skill`; `SkillToolHeader` (card sólido, tag TOOL, pílula de estado pt-BR: preparando / executando / concluída / erro) para as demais. O indicador flutuante diz "carregando skill X" ou "executando tool X".
 
+## Homepage sem sessão (2026-10-04)
+
+Sem nenhuma sessão (primeiro acesso ou após excluir todas) o centro mostra `home-screen.tsx`: marca, tagline, três cartões para começar (**Enviar meu currículo** → `<label>` do input escondido + `parseCvFile` + `createSession({ cv, title })`; **Colar o texto** → sessão com CV vazio, que abre direto no editor; **Testar com um exemplo** → `SAMPLE_CV`) e a grade das 4 skills. A coluna do agente e o divisor só existem com sessão. Antes disso o `AppShell` criava uma sessão sozinha e, ao excluir a última, o `CvPanel` em animação de saída quebrava com `session.cv` nulo — agora o painel tem guard (`if (!session) return null` depois dos hooks). Upload compartilhado em `lib/cv/upload.ts`.
+
 ## Destaques no CV (2026-10-04)
 
 As tools "apontam" no documento: cada parte mencionada ganha um **retângulo tracejado** no painel do CV, com rótulo e cor por tom (azul = informação, âmbar = atenção, vermelho = falha, verde = evidência positiva). Várias partes ao mesmo tempo.
