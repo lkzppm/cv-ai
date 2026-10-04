@@ -72,6 +72,17 @@ Fundo temático e discreto: **folhas de currículo esboçadas** (contorno arredo
 - **Colapsáveis fluidos** (`.collapsible-fluid` em `globals.css`): keyframes de altura via `--radix-collapsible-content-height` + fade; usado em skill, tool e raciocínio. **Nunca use `!important` nessa animação**: o Radix mede a altura zerando `animation-name` por estilo inline, e inline não vence `!important` — o conteúdo era medido com altura 0 e ficava preso (bug de 2026-10-04). O CSS fica fora das `@layer` do Tailwind, o que já basta para vencer o `animate-in/out` dos componentes gerados. Respeita `prefers-reduced-motion`.
 - **Skill carregada vs tool executada** (`skill-activity.tsx`): `SkillLoadedRow` (linha tracejada azul, ícone da skill, "instruções carregadas", expande para ler o SKILL.md) para `tool-load_skill`; `SkillToolHeader` (card sólido, tag TOOL, pílula de estado pt-BR: preparando / executando / concluída / erro) para as demais. O indicador flutuante diz "carregando skill X" ou "executando tool X".
 
+## Destaques no CV (2026-10-04)
+
+As tools "apontam" no documento: cada parte mencionada ganha um **retângulo tracejado** no painel do CV, com rótulo e cor por tom (azul = informação, âmbar = atenção, vermelho = falha, verde = evidência positiva). Várias partes ao mesmo tempo.
+
+- **Dados**: `CvRef` (`quote` | `section` | `header`) dentro do `output` de cada tool — ver `spec/02`. Persistem com a conversa, então o card continua interativo depois de recarregar.
+- **Store** (`lib/store/highlights.ts`, zustand sem persist): três camadas — `hover` (item do card sob o cursor) > `focused` (item clicado) > `pinned` (tudo que a última tool mencionou). `selectVisible()` resolve a camada.
+- **Camada** (`cv-highlights.tsx`): envolve o `<article class="cv-doc">`, resolve cada ref para elementos do DOM (`resolveRef`), une os `getBoundingClientRect` e desenha `div.cv-highlight` absolutos (CSS em `globals.css`, `--hl` por tom, escondidos no print). Re-mede com `ResizeObserver` e quando o CV/itens mudam; ao fixar ou focar, rola o primeiro destaque para o centro (`scrollIntoView`). Refs que não resolvem simplesmente não desenham.
+- **Cards** (`highlightable.tsx`): `<Highlightable item={{ refs, label, tone }}>` — hover mostra, clique fixa/solta, ícone `ScanSearch` à direita; sem refs vira um `div` comum. Cada card exporta `xxxHighlights(output)` com o que fixar automaticamente ao terminar: `format_checker` = checagens com problema; `cv_scorer` = plano de melhoria; `role_matcher` = evidências dos requisitos atendidos; `cv_editor` = linhas que vão mudar (some ao aplicar, porque as linhas deixam de existir).
+- **Sidebar**: `useAutoHighlights` fixa quando um `tool-*` chega em `output-available` (ignora o histórico carregado do storage) e limpa ao trocar de sessão. O chip "N destaques · tool ×" no cabeçalho do painel limpa tudo.
+- Decisão: overlay medido no DOM em vez de marcar o Markdown — não depende da estrutura do `react-markdown`, suporta faixas (seção = vários blocos) e mantém o documento imprimível intacto.
+
 ## Referências de design
 - Claude Design (layout canvas + sidebar de chat)
 - vgpu examples: https://vgpu.sh/examples · stdlib WGSL: `@vgpu/wgsl-std` (noise, hash, color)

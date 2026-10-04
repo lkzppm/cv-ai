@@ -41,6 +41,8 @@ Cada skill é uma pasta com `SKILL.md` (conhecimento em linguagem natural) e `in
 
 **Carregamento progressivo.** O system prompt lista só nome, descrição e "quando usar" de cada skill. Quando o agente decide usar uma, ele chama `load_skill({ names })`, que devolve o `SKILL.md` completo (regras, rubrica, como apresentar); só depois a tool da skill fica disponível (`prepareStep` → `activeTools`). No chat isso aparece como dois eventos distintos: **skill carregada** (linha tracejada com o documento) e **tool executada** (card com o resultado).
 
+**Tools que apontam no CV.** Quando uma tool cita uma parte do currículo (um bullet sem número, a seção de Habilidades, o cabeçalho), o painel ao lado desenha um **retângulo tracejado** em cada trecho citado, com rótulo e cor (atenção, falha, evidência). As tools devolvem referências (`quote` = trecho exato, `section`, `header`) e a interface as localiza no documento renderizado. Passe o mouse em uma linha do card para ver só aquele trecho; clique para fixar. O `cv_editor` marca o que vai mudar antes de você aplicar.
+
 ---
 
 ## Passo a passo

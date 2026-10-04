@@ -16,10 +16,12 @@ import { Tool, ToolContent, ToolInput, ToolOutput } from "@/components/ai-elemen
 import { SkillLoadedRow, SkillToolHeader } from "./skill-activity";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { useActiveSession, useSessions } from "@/lib/store/sessions";
-import { ScoreCard } from "./tool-cards/score-card";
-import { FormatCard } from "./tool-cards/format-card";
-import { RoleMatchCard } from "./tool-cards/role-match-card";
-import { EditProposalCard } from "./tool-cards/edit-proposal-card";
+import { useHighlights } from "@/lib/store/highlights";
+import type { CvHighlight } from "@/lib/cv/refs";
+import { ScoreCard, scoreHighlights } from "./tool-cards/score-card";
+import { FormatCard, formatHighlights } from "./tool-cards/format-card";
+import { RoleMatchCard, roleHighlights } from "./tool-cards/role-match-card";
+import { EditProposalCard, editHighlights } from "./tool-cards/edit-proposal-card";
 
 
 const SKILL_SUBTITLES: Record<string, string> = {
@@ -60,6 +62,8 @@ export function AgentSidebar() {
   useEffect(() => {
     if (status === "ready" || status === "error") setMessages(session.id, messages);
   }, [messages, status, session.id, setMessages]);
+
+  useAutoHighlights(messages);
 
   const busy = status === "submitted" || status === "streaming";
   const activity = busy ? findActivity(messages) : null;
@@ -198,6 +202,51 @@ export function AgentSidebar() {
 }
 
 type SkillPart = Extract<CvAgentUIMessage["parts"][number], { type: `tool-${string}` }>;
+
+/**
+ * Quando uma tool termina, fixa no painel do CV os trechos que ela mencionou.
+ * O histórico carregado do storage não dispara (só chamadas novas desta sessão);
+ * ao desmontar (troca de sessão) os destaques são limpos.
+ */
+function useAutoHighlights(messages: CvAgentUIMessage[]) {
+  const pin = useHighlights((s) => s.pin);
+  const clear = useHighlights((s) => s.clear);
+  const seen = useRef<Set<string> | null>(null);
+
+  useEffect(() => {
+    if (!seen.current) {
+      seen.current = new Set(messages.flatMap((m) => m.parts.flatMap((p) => ("toolCallId" in p ? [p.toolCallId] : []))));
+      return;
+    }
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+    for (const p of last.parts) {
+      if (!p.type.startsWith("tool-") || !("toolCallId" in p) || seen.current.has(p.toolCallId)) continue;
+      if (p.state !== "output-available") continue;
+      seen.current.add(p.toolCallId);
+      const items = highlightsFor(p as SkillPart);
+      if (items.length) pin(p.type.replace("tool-", ""), items);
+    }
+  }, [messages, pin]);
+
+  useEffect(() => () => clear(), [clear]);
+}
+
+function highlightsFor(part: SkillPart): CvHighlight[] {
+  if (part.state !== "output-available") return [];
+  switch (part.type) {
+    case "tool-cv_scorer":
+      return scoreHighlights(part.output);
+    case "tool-format_checker":
+      return formatHighlights(part.output);
+    case "tool-role_matcher":
+      return roleHighlights(part.output);
+    case "tool-cv_editor":
+      return editHighlights(part.output);
+    default:
+      return [];
+  }
+}
 
 /**
  * O StickToBottom só acompanha se o usuário já estava no fim. Ao enviar uma

@@ -2,11 +2,13 @@
 
 import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { DownloadIcon, PencilIcon, PrinterIcon, UploadIcon, Undo2Icon, Loader2Icon, CheckIcon, XIcon } from "lucide-react";
+import { DownloadIcon, PencilIcon, PrinterIcon, UploadIcon, Undo2Icon, Loader2Icon, CheckIcon, XIcon, ScanSearchIcon } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useActiveSession, useSessions } from "@/lib/store/sessions";
+import { useHighlights } from "@/lib/store/highlights";
 import { CvMarkdown } from "./cv-markdown";
+import { CvHighlightLayer } from "./cv-highlights";
 import { parseCv } from "@/lib/cv/parse";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +21,8 @@ export function CvPanel() {
   const [draft, setDraft] = useState(session.cv);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const pinned = useHighlights((s) => s.pinned);
+  const clearHighlights = useHighlights((s) => s.clear);
 
   const stats = parseCv(session.cv);
   const version = session.cvHistory.length + 1;
@@ -69,6 +73,24 @@ export function CvPanel() {
         <span>{stats.wordCount} palavras</span>
         <span className="opacity-60">·</span>
         <span>~{stats.estimatedPages} pág.</span>
+        <AnimatePresence>
+          {pinned && mode === "view" && (
+            <motion.button
+              key="hl-chip"
+              type="button"
+              onClick={clearHighlights}
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              title="Limpar destaques"
+              className="ml-2 flex items-center gap-1.5 rounded-full border border-dashed border-primary/50 bg-primary/[0.06] px-2 py-0.5 text-primary transition-colors hover:bg-primary/[0.12]"
+            >
+              <ScanSearchIcon className="size-3" />
+              {pinned.items.length} {pinned.items.length === 1 ? "destaque" : "destaques"} · {pinned.source}
+              <XIcon className="size-3 opacity-70" />
+            </motion.button>
+          )}
+        </AnimatePresence>
         <AnimatePresence mode="popLayout">
           <motion.span
             key={version}
@@ -94,7 +116,9 @@ export function CvPanel() {
           {mode === "view" ? (
             <motion.div key="view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
               {session.cv.trim() ? (
-                <CvMarkdown markdown={session.cv} />
+                <CvHighlightLayer markdown={session.cv}>
+                  <CvMarkdown markdown={session.cv} />
+                </CvHighlightLayer>
               ) : (
                 <div className="py-24 text-center text-muted-foreground">
                   Cole seu currículo em <b>Editar</b> ou envie um PDF para começar.

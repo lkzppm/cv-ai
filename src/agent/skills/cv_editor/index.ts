@@ -1,5 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
+import { changedLineRefs } from "@/lib/cv/refs";
 import { requireLoaded, type SkillContext } from "../context";
 import { loadSkillDoc } from "../registry";
 
@@ -24,6 +25,8 @@ export function createCvEditor(ctx: SkillContext) {
         newCv,
         summary,
         stats: { wordsBefore: before, wordsAfter: after, delta: after - before },
+        // Trechos do CV atual que mudam/somem: a UI destaca "o que vai ser alterado" antes de aplicar.
+        changed: changedLineRefs(ctx.cv, newCv),
       };
     },
     // Não devolve o CV inteiro ao modelo (ele já o escreveu); só confirma a proposta.

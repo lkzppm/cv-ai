@@ -60,12 +60,31 @@ src/agent/skills/<nome>/
 - Input: `{ newCv: string (Markdown completo), summary: string[] }` — o próprio modelo escreve o documento.
 - `execute` só calcula estatísticas. O card no cliente tem **Pré-visualizar** e **Aplicar** (→ `store.setCv`, com histórico para **Desfazer**).
 
+## Referências ao CV (`CvRef`) — 2026-10-04
+
+Toda tool que fala de uma parte do CV devolve **âncoras** para a UI destacar no painel (`src/lib/cv/refs.ts`):
+
+| `kind` | Campo | Como a UI resolve |
+|---|---|---|
+| `quote` | `text` (trecho VERBATIM) | menor bloco renderizado (`li`, `p`, `h1–h3`, `td`) cujo texto normalizado contém o trecho; cai para os 7 primeiros termos |
+| `section` | `title` (`##`) | do `h2` até o próximo `h2`; casa por texto ou pelo tipo normalizado (`sectionKindOf`) |
+| `header` | — | `h1` + linha de contato |
+
+Onde cada skill produz refs:
+
+- **format_checker** — checagens determinísticas calculam `refs` no servidor (contato/nome → `header`; seções/datas → `section`; verbos/quantificação → `quote` dos bullets fracos **de experiência/projetos**, não de habilidades; primeira pessoa → linhas com "eu/meu"). As qualitativas pedem `evidence: string[]` ao modelo (trechos copiados exatamente), convertido em `quote`.
+- **cv_scorer** — `dimensions[].evidence` (até 2 trechos) e `improvementPlan[].quote` (trecho a alterar, ou `null` → o card usa `section`).
+- **role_matcher** — `match.evidence` (trechos que comprovam os `matched`); fica fora do `toModelOutput`.
+- **cv_editor** — `changed: CvRef[]` calculado por `changedLineRefs(cvAtual, newCv)`: linhas do CV atual que mudam ou somem.
+
+Regra de prompt: peça sempre cópia **exata** ("copie EXATAMENTE") — paráfrases não resolvem no DOM. Os campos de evidência não vão para o modelo (`toModelOutput`), só para o card.
+
 ## Como adicionar uma skill nova (ex.: `cover_letter`)
 
 1. `mkdir src/agent/skills/cover_letter` com `SKILL.md` (frontmatter + instruções) e `index.ts` exportando `createCoverLetter(ctx)`.
 2. Registrar em `src/agent/skills/index.ts` (`SKILL_NAMES` + objeto de `createSkills`).
-3. Criar `components/workspace/tool-cards/cover-letter-card.tsx` e adicionar o `case "tool-cover_letter"` em `agent-sidebar.tsx` (switch de render + `SKILL_TITLES`).
-4. Opcional: chip em `skill-chips.tsx`.
+3. Criar `components/workspace/tool-cards/cover-letter-card.tsx` e adicionar o `case "tool-cover_letter"` em `agent-sidebar.tsx` (switch de render + `SKILL_SUBTITLES`).
+4. Se a skill cita partes do CV, devolva `CvRef[]` no output, exporte `coverLetterHighlights(output)` do card e registre em `highlightsFor()` na sidebar; envolva as linhas do card em `<Highlightable item=…>`.
 5. Atualizar este arquivo e o README.
 
 ## Modelos Groq testáveis (2026-10)
