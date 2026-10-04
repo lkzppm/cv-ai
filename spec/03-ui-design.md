@@ -78,6 +78,10 @@ Sem nenhuma sessão (primeiro acesso ou após excluir todas) o centro mostra `ho
 
 **Upload de PDF (2026-10-04).** Testado com um CV do Canva: (1) a `extractText` da unpdf devolvia o texto na ordem do content stream (todos os títulos juntos, bullets longe do cargo) — `lib/cv/pdf-text.ts` lê os itens com `getTextContent()`, agrupa em linhas por `y` (tolerância = metade do tamanho da fonte), ordena de cima para baixo / esquerda para direita, insere linha em branco em saltos verticais grandes e `" | "` entre colunas lado a lado; (2) o gpt-oss-20b gastava os 2 048 tokens de saída padrão da Groq só raciocinando e devolvia texto vazio (`finishReason: "length"`), e o cliente gravava `""` como CV — a conversão agora usa o 120b com `reasoningEffort: "low"` e `maxOutputTokens: 8000` (~1,5 s), a rota devolve `markdown: null` se não terminar com `stop`, e `parseCvFile` cai para o texto bruto.
 
+## Rail de sessões: título longo (2026-10-04)
+
+O `Viewport` do Radix ScrollArea renderiza os filhos dentro de um `div` com `display: table` inline, então a lista assumia a largura do título mais longo e os botões renomear/excluir ficavam fora do rail (cortados pelo `overflow-hidden`). Correção sem tocar no componente gerado: `[&_[data-slot=scroll-area-viewport]>div]:block!` no `ScrollArea` do rail + `w-full min-w-0` na lista; o `truncate` do título volta a valer.
+
 ## Destaques no CV (2026-10-04)
 
 As tools "apontam" no documento: cada parte mencionada ganha um **retângulo tracejado** no painel do CV, com rótulo e cor por tom (azul = informação, âmbar = atenção, vermelho = falha, verde = evidência positiva). Várias partes ao mesmo tempo.
