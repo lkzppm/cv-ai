@@ -16,6 +16,7 @@
 
 - [x] Branches `main` ← `dev` ← `feat/*`; CI no GitHub Actions (lint, `next typegen` + tsc, build) em push/PR para `main` e `dev`. Deploy futuro: Vercel.
 - [x] **Tools interativas com o CV** (`feat/cv-highlights`): cada tool devolve `CvRef[]` e o painel desenha retângulos tracejados nas partes citadas (várias ao mesmo tempo); hover/clique no card foca um item; fixação automática ao terminar a tool. `format_checker` passou a avaliar verbo de ação/quantificação só nos bullets de experiência/projetos.
+- [x] **Deploy na Vercel** (2026-10-04): https://cvagent-ufrj.vercel.app, projeto `cvagent-ufrj`, `vercel.json` com `framework: nextjs`, env `GROQ_*` em produção/preview; `/api/parse-cv` testado em produção. Integração GitHub não conectou pela CLI (`vercel git connect` falhou: app da Vercel sem acesso ao repo) — conectar pelo painel para deploy automático da `main`.
 - [x] **Gate macio das skills** (`fix/soft-skill-gate`): o 400 da Groq ("tool not in request.tools") sumiu; chamada sem `load_skill` carrega a skill na hora e sinaliza no card. Homepage sem a grade de skills (seta para o ⓘ).
 - [x] **Histórico de versões navegável** (`feat/cv-versions`): menu no chip vN, visualização de qualquer versão, diff com a atual e restaurar; versões carimbadas com origem e hora.
 - [x] **Upload de PDF do Canva** (`fix/pdf-extraction`): extração ordenada por layout e conversão no 120b com reasoning baixo; antes o CV ficava vazio.
