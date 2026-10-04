@@ -1,7 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { requireLoaded, type SkillContext } from "../context";
-import { loadSkillDoc } from "../registry";
+import { autoLoadNote, loadSkillDoc } from "../registry";
 
 /**
  * cv_editor: o próprio modelo escreve o novo Markdown como *input* da tool.
@@ -17,19 +17,21 @@ export function createCvEditor(ctx: SkillContext) {
       summary: z.array(z.string()).min(1).max(6).describe("O que mudou, em bullets curtos"),
     }),
     execute: async ({ newCv, summary }) => {
-      requireLoaded(ctx, "cv_editor");
+      const autoLoaded = requireLoaded(ctx, "cv_editor");
       const before = ctx.cv.split(/\s+/).filter(Boolean).length;
       const after = newCv.split(/\s+/).filter(Boolean).length;
       return {
         newCv,
         summary,
         stats: { wordsBefore: before, wordsAfter: after, delta: after - before },
+        autoLoaded,
       };
     },
     // Não devolve o CV inteiro ao modelo (ele já o escreveu); só confirma a proposta.
     toModelOutput: ({ output }) => ({
       type: "json",
       value: {
+        ...(output.autoLoaded ? { skillNote: autoLoadNote(doc) } : {}),
         proposed: true,
         summary: output.summary,
         stats: output.stats,

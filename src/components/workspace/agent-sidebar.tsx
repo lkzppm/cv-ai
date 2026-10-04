@@ -160,7 +160,12 @@ export function AgentSidebar() {
                               className="rounded-2xl"
                             >
                               <Tool defaultOpen={part.state === "output-available" || part.state === "output-error"} className="gradient-border mb-0 rounded-2xl">
-                                <SkillToolHeader name={part.type.replace("tool-", "")} state={part.state} subtitle={SKILL_SUBTITLES[part.type]} />
+                                <SkillToolHeader
+                                  name={part.type.replace("tool-", "")}
+                                  state={part.state}
+                                  subtitle={SKILL_SUBTITLES[part.type]}
+                                  autoLoaded={part.state === "output-available" && Boolean((part.output as { autoLoaded?: boolean }).autoLoaded)}
+                                />
                                 <ToolContent className="collapsible-fluid">
                                   {part.state === "input-streaming" && <Shimmer>Preparando a skill…</Shimmer>}
                                   {part.state === "input-available" && <Shimmer>{`Executando ${part.type.replace("tool-", "")}…`}</Shimmer>}

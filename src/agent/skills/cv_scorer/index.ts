@@ -3,7 +3,7 @@ import { z } from "zod";
 import { skillModel } from "@/agent/models";
 import { parseCv } from "@/lib/cv/parse";
 import { requireLoaded, type SkillContext } from "../context";
-import { loadSkillDoc } from "../registry";
+import { autoLoadNote, loadSkillDoc } from "../registry";
 
 export const scoreSchema = z.object({
   overall: z.number().min(0).max(100),
@@ -51,7 +51,7 @@ export function createCvScorer(ctx: SkillContext) {
       jobKeywords: z.array(z.string()).nullish().describe("Keywords vindas do role_matcher, se já executado"),
     }),
     execute: async ({ targetRole, jobKeywords }) => {
-      requireLoaded(ctx, "cv_scorer");
+      const autoLoaded = requireLoaded(ctx, "cv_scorer");
       if (!ctx.cv.trim()) throw new Error("O CV está vazio. Peça ao usuário para colar ou enviar o currículo.");
       const parsed = parseCv(ctx.cv);
 
@@ -82,12 +82,13 @@ ${ctx.cv}`,
       const band =
         overall >= 85 ? "pronto para vagas competitivas" : overall >= 70 ? "bom, ajustes pontuais" : overall >= 50 ? "precisa de revisão estrutural" : "reescrever com apoio do cv_editor";
 
-      return { ...object, overall, band, dimensions: object.dimensions.map((d) => ({ ...d, weight: WEIGHTS[d.name] ?? d.weight })) };
+      return { ...object, overall, band, dimensions: object.dimensions.map((d) => ({ ...d, weight: WEIGHTS[d.name] ?? d.weight })), autoLoaded };
     },
     // O card recebe tudo; o modelo só vê o essencial para comentar.
     toModelOutput: ({ output }) => ({
       type: "json",
       value: {
+        ...(output.autoLoaded ? { skillNote: autoLoadNote(doc) } : {}),
         overall: output.overall,
         band: output.band,
         verdict: output.verdict,

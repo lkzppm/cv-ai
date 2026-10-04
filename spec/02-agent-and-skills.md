@@ -60,6 +60,10 @@ src/agent/skills/<nome>/
 - Input: `{ newCv: string (Markdown completo), summary: string[] }` — o próprio modelo escreve o documento.
 - `execute` só calcula estatísticas. A revisão acontece **no painel do CV** como diff por blocos (`lib/cv/diff.ts`, `cv-diff-view.tsx`): aceitar um bloco aplica só ele (`store.setCv`, com **Desfazer**); recusar tira o bloco da proposta. O card mostra o resumo e "Aceitar tudo / Recusar tudo"; sem revisão aberta (ex.: após recarregar), "Revisar no CV" reabre. (2026-10-04)
 
+## Gate das skills: de `activeTools` para gate macio (2026-10-04)
+
+O gate por `prepareStep → activeTools` (só `load_skill` + skills carregadas iam na requisição) provocava um erro fatal: quando o gpt-oss-20b decidia chamar `cv_editor` sem ter carregado a skill naquela conversa, a Groq rejeitava a geração inteira com `400 "attempted to call tool 'cv_editor' which was not in request.tools"` — o stream morria e não há como interceptar isso no SDK. Decisão: **todas as tools vão sempre na requisição**; `requireLoaded(ctx, name)` virou um gate macio — se a skill não estava carregada, carrega na hora e devolve `true`; a tool inclui `autoLoaded: true` no output, o `toModelOutput` anexa `skillNote` com as instruções de apresentação do SKILL.md, a rota conta a skill como carregada nos turnos seguintes e o card mostra a pílula "skill carregada aqui". O protocolo explícito (`load_skill` antes) continua no prompt e é o caminho normal; o gate macio é a rede de segurança.
+
 ## Referências ao CV (`CvRef`) — 2026-10-04
 
 Toda tool que fala de uma parte do CV devolve **âncoras** para a UI destacar no painel (`src/lib/cv/refs.ts`):
