@@ -200,6 +200,17 @@ O 120b continua nas skills porque o 20b falhou no schema do `cv_scorer` e na sí
 `role_matcher`. Para usar só o 120b (respostas um pouco mais elaboradas), defina
 `GROQ_MODEL=openai/gpt-oss-120b` e ative o Dev Tier em https://console.groq.com/settings/billing.
 
+## Deploy (Vercel)
+
+Produção: **https://cvagent-ufrj.vercel.app** (projeto `cvagent-ufrj`). O `vercel.json` só declara `framework: nextjs`; as variáveis `GROQ_*` ficam no painel do projeto (produção e preview). Para publicar a partir da `main`:
+
+```bash
+vercel link --project cvagent-ufrj   # uma vez
+vercel deploy --prod --yes
+```
+
+O CI (`.github/workflows/ci.yml`) valida lint, tipos e build em cada PR; o deploy é manual pela CLI (ou pela integração GitHub, se conectada no painel).
+
 ## Referências
 
 - AI SDK — https://ai-sdk.dev/docs · AI Elements — https://elements.ai-sdk.dev
