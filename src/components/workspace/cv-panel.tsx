@@ -10,7 +10,8 @@ import { useHighlights } from "@/lib/store/highlights";
 import { useEditProposal } from "@/lib/store/edit-proposal";
 import { CvMarkdown } from "./cv-markdown";
 import { CvHighlightLayer } from "./cv-highlights";
-import { CvDiffView } from "./cv-diff-view";
+import { CvDiff, CvDiffView } from "./cv-diff-view";
+import { VersionBar, VersionMenu } from "./cv-versions";
 import { countChanges, diffCv } from "@/lib/cv/diff";
 import { parseCv } from "@/lib/cv/parse";
 import { CV_FILE_ACCEPT, parseCvFile } from "@/lib/cv/upload";
@@ -23,6 +24,13 @@ export function CvPanel() {
   const session = useActiveSession();
   const setCv = useSessions((s) => s.setCv);
   const undoCv = useSessions((s) => s.undoCv);
+  const restoreCv = useSessions((s) => s.restoreCv);
+  // Histórico navegável: índice da versão aberta (null = atual) e diff com a atual.
+  // Derivado no render: se o histórico encolher (Desfazer), volta para a atual sem efeito.
+  const [viewingRaw, setViewing] = useState<number | null>(null);
+  const [showDiff, setShowDiff] = useState(false);
+  const historyLength = session?.cvHistory.length ?? 0;
+  const viewing = viewingRaw !== null && viewingRaw < historyLength ? viewingRaw : null;
   // CV vazio (sessão "Colar o texto") já abre no editor.
   const [mode, setMode] = useState<"view" | "edit">(session?.cv.trim() ? "view" : "edit");
   const [draft, setDraft] = useState(session?.cv ?? "");
@@ -44,14 +52,18 @@ export function CvPanel() {
     setMode("edit");
   };
   const saveEdit = () => {
-    setCv(draft);
+    setCv(draft, { label: "edição manual" });
     setMode("view");
+  };
+  const openVersion = (index: number | null) => {
+    setViewing(index);
+    if (index === null) setShowDiff(false);
   };
 
   const onUpload = async (file: File) => {
     setUploading(true);
     try {
-      setCv(await parseCvFile(file));
+      setCv(await parseCvFile(file), { label: "upload" });
       setMode("view");
     } catch (e) {
       alert((e as Error).message);
@@ -128,18 +140,26 @@ export function CvPanel() {
             </motion.button>
           )}
         </AnimatePresence>
-        <AnimatePresence mode="popLayout">
-          <motion.span
-            key={version}
-            initial={{ scale: 0.6, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.6, opacity: 0 }}
-            className="ml-auto rounded-full border border-primary/30 bg-accent px-2 py-0.5 font-medium text-accent-foreground"
-          >
-            v{version}
-          </motion.span>
-        </AnimatePresence>
+        <VersionMenu versions={session.cvHistory} current={version} viewing={viewing} onSelect={openVersion} />
       </div>
+
+      <AnimatePresence>
+        {viewing !== null && mode === "view" && (
+          <VersionBar
+            key="version-bar"
+            versions={session.cvHistory}
+            current={version}
+            viewing={viewing}
+            showDiff={showDiff}
+            onNavigate={openVersion}
+            onToggleDiff={() => setShowDiff((v) => !v)}
+            onRestore={() => {
+              restoreCv(viewing);
+              openVersion(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* folha */}
       <motion.div
@@ -154,6 +174,17 @@ export function CvPanel() {
             <motion.div key="view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
               {pending ? (
                 <CvDiffView current={session.cv} pending={pending} />
+              ) : viewing !== null && session.cvHistory[viewing] ? (
+                showDiff ? (
+                  <CvDiff
+                    before={session.cvHistory[viewing].cv}
+                    after={session.cv}
+                    tone="primary"
+                    emptyNote={`v${viewing + 1} é idêntica à versão atual.`}
+                  />
+                ) : (
+                  <CvMarkdown markdown={session.cvHistory[viewing].cv} />
+                )
               ) : session.cv.trim() ? (
                 <CvHighlightLayer markdown={session.cv}>
                   <CvMarkdown markdown={session.cv} />
@@ -194,7 +225,26 @@ export function CvPanel() {
             className="hidden"
             onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])}
           />
-          {mode === "view" ? (
+          {viewing !== null && mode === "view" ? (
+            <>
+              <ToolbarButton label="Voltar à versão atual" onClick={() => openVersion(null)}>
+                <XIcon className="size-4" />
+              </ToolbarButton>
+              <ToolbarButton label={showDiff ? "Ocultar diff" : "Diff com a versão atual"} onClick={() => setShowDiff((v) => !v)}>
+                <GitCompareIcon className="size-4" />
+              </ToolbarButton>
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  restoreCv(viewing);
+                  openVersion(null);
+                }}
+                className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+              >
+                <CheckIcon className="size-4" /> Restaurar v{viewing + 1}
+              </motion.button>
+            </>
+          ) : mode === "view" ? (
             <>
               <ToolbarButton label="Enviar PDF ou texto" onClick={() => fileRef.current?.click()} disabled={uploading}>
                 {uploading ? <Loader2Icon className="size-4 animate-spin" /> : <UploadIcon className="size-4" />}

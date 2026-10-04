@@ -45,6 +45,8 @@ Cada skill é uma pasta com `SKILL.md` (conhecimento em linguagem natural) e `in
 
 **Revisão do `cv_editor` no próprio CV.** A proposta aparece como um diff dentro do painel: cada bloco alterado mostra o antes (riscado) e o depois, com **Aceitar** / **Recusar** ali mesmo. Aceitar um bloco aplica só ele (dá para desfazer); recusar o tira da proposta. Também há "aceitar tudo / recusar tudo" no cabeçalho.
 
+**Versões.** Toda alteração (edição manual, upload, cv_editor, restauração) vira uma versão com hora e origem. O chip `vN` do painel abre o histórico: dá para abrir qualquer versão, ver o diff dela com a atual e restaurá-la com um clique (a atual vai para o histórico, nada se perde).
+
 ---
 
 ## Passo a passo

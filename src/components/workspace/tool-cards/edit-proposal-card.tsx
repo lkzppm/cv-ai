@@ -54,7 +54,7 @@ export function EditProposalCard({ output, toolCallId }: { output: Output; toolC
             <Button
               size="sm"
               onClick={() => {
-                setCv(pending.newCv);
+                setCv(pending.newCv, { label: "cv_editor" });
                 dismiss();
               }}
             >
@@ -69,7 +69,7 @@ export function EditProposalCard({ output, toolCallId }: { output: Output; toolC
             <Button size="sm" onClick={() => propose({ toolCallId, newCv: output.newCv, summary: output.summary })}>
               <GitCompareIcon /> Revisar no CV
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setCv(output.newCv)}>
+            <Button size="sm" variant="outline" onClick={() => setCv(output.newCv, { label: "cv_editor" })}>
               <CheckIcon /> Aplicar tudo
             </Button>
           </>
