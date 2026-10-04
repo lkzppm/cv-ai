@@ -625,3 +625,11 @@
   .cv-hunk { border: 0; margin: 0; padding: 0; background: none; }
   .cv-hunk-new { box-shadow: none; background: none; padding: 0; }
 }
+
+/* Diff de versões (somente leitura): tom azul em vez do âmbar da revisão. */
+.cv-hunk[data-tone="primary"] {
+  border-color: color-mix(in oklab, var(--primary) 60%, transparent);
+  background: color-mix(in oklab, var(--primary) 4%, transparent);
+}
+.cv-hunk[data-tone="primary"] .cv-hunk-title { color: var(--primary); cursor: default; }
+.cv-hunk[data-tone="primary"] .cv-hunk-title:hover { text-decoration: none; }
