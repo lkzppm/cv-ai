@@ -4,14 +4,14 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { FileUpIcon, ClipboardPasteIcon, SparklesIcon, Loader2Icon, ArrowRightIcon, type LucideIcon } from "lucide-react";
 import { CvAgentIcon } from "@/components/brand/cv-agent-icon";
-import { SKILLS_META } from "@/lib/skills-meta";
 import { useSessions } from "@/lib/store/sessions";
 import { CV_FILE_ACCEPT, parseCvFile, titleFromFile } from "@/lib/cv/upload";
 import { cn } from "@/lib/utils";
 
 /**
  * Homepage: aparece quando não há nenhuma sessão (primeiro acesso ou depois
- * de excluir todas). Três formas de começar + o que o agente sabe fazer.
+ * de excluir todas). Três formas de começar; o "o que ele faz" fica no botão
+ * de info do header, para onde a setinha aponta.
  */
 export function HomeScreen() {
   const createSession = useSessions((s) => s.createSession);
@@ -58,7 +58,7 @@ export function HomeScreen() {
       initial="hidden"
       animate="show"
       variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } } }}
-      className="mx-auto flex min-h-full max-w-[860px] flex-col justify-center gap-10 pb-16"
+      className="relative mx-auto flex min-h-full max-w-[860px] flex-col justify-center gap-10 pb-16"
     >
       <input
         id="home-cv-file"
@@ -72,6 +72,29 @@ export function HomeScreen() {
           if (f) void onUpload(f);
         }}
       />
+
+      {/* dica ancorada no topo: a seta termina logo abaixo do botão ⓘ, que fica ~90px à direita do centro do header */}
+      <motion.div
+        variants={fadeUp}
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-1/2 hidden -translate-x-[45%] items-end gap-1 md:flex"
+      >
+        <span className="pb-1 text-[12px] text-muted-foreground">o que ele sabe fazer</span>
+        <motion.svg
+          animate={{ y: [0, -4, 0] }}
+          transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+          viewBox="0 0 60 60"
+          className="h-[60px] w-[60px] text-primary"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.6}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M6 56 C 10 36, 24 18, 44 6" strokeDasharray="3 3.5" />
+          <path d="M35 5 L44 6 L43 15" />
+        </motion.svg>
+      </motion.div>
 
       {/* marca + tagline */}
       <motion.div variants={fadeUp} className="flex flex-col items-center text-center">
@@ -124,28 +147,6 @@ export function HomeScreen() {
         </motion.p>
       )}
 
-      {/* skills */}
-      <motion.div variants={fadeUp}>
-        <div className="mb-2 px-1 text-center text-[10.5px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          O que ele sabe fazer
-        </div>
-        <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          {SKILLS_META.map((s) => (
-            <li key={s.key} className="flex gap-2.5 rounded-xl border border-glass-border bg-background/20 p-3">
-              <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-background/40 text-primary ring-1 ring-primary/20">
-                <s.icon className="size-3.5" />
-              </span>
-              <span className="min-w-0">
-                <span className="block font-mono text-[11.5px] font-semibold text-primary">{s.title}</span>
-                <span className="block text-[12px] leading-snug text-muted-foreground">{s.desc}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-4 text-center text-[11px] text-muted-foreground">
-          Sessões, versões do CV e conversas ficam só no seu navegador.
-        </p>
-      </motion.div>
     </motion.div>
   );
 }
