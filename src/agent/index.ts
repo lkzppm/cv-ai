@@ -12,10 +12,10 @@ export function createCvAgent(ctx: SkillContext) {
     model: agentModel(),
     instructions: buildInstructions(ctx.cv),
     tools: createSkills(ctx),
-    // Carregamento progressivo de verdade: a cada passo só `load_skill` e as skills
-    // já carregadas ficam ativas. O modelo não consegue executar uma skill sem
-    // antes ler o SKILL.md dela — e a UI mostra os dois momentos.
-    prepareStep: () => ({ activeTools: ["load_skill", ...ctx.loaded] }),
+    // Todas as tools vão sempre na requisição. Já houve um gate por `activeTools`,
+    // mas quando o gpt-oss chamava uma skill não carregada a Groq devolvia 400
+    // (tool fora de request.tools) e o stream morria. Hoje `requireLoaded` carrega
+    // a skill na hora e sinaliza `autoLoaded` (ver skills/context.ts).
     stopWhen: stepCountIs(12),
     temperature: 0.3,
     providerOptions: isReasoningModel(AGENT_MODEL_ID)

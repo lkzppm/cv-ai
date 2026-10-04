@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useRef, useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { MoonIcon, SunIcon, PanelLeftIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { AmbientCanvas } from "@/components/ambient/ambient-canvas";
 import { CHAT_WIDTH, useActiveSession, useSessions } from "@/lib/store/sessions";
 import { SessionsRail } from "./sessions-rail";
 import { CvPanel } from "./cv-panel";
+import { HomeScreen } from "./home-screen";
 import { AgentSidebar } from "./agent-sidebar";
 import { AboutDialog } from "./about-dialog";
 import { cn } from "@/lib/utils";
@@ -16,10 +17,10 @@ import { cn } from "@/lib/utils";
 /**
  * Layout em 3 colunas sobre o fundo de fluido:
  *  [ rail de sessões ] [ CV atual (folha flutuante) ] [ agente ]
+ * Sem nenhuma sessão, o centro vira a homepage e a coluna do agente some.
  */
 export function AppShell() {
   const session = useActiveSession();
-  const createSession = useSessions((s) => s.createSession);
   const hasHydrated = useHydrated();
   const theme = useSessions((s) => s.theme);
   const toggleTheme = useSessions((s) => s.toggleTheme);
@@ -27,10 +28,6 @@ export function AppShell() {
   const chatWidth = useSessions((s) => s.chatWidth);
   const setChatWidth = useSessions((s) => s.setChatWidth);
   const { dragging, onPointerDown } = useResize(setChatWidth);
-
-  useEffect(() => {
-    if (hasHydrated && !session) createSession();
-  }, [hasHydrated, session, createSession]);
 
   return (
     <div className="relative flex h-dvh flex-col overflow-hidden">
@@ -101,6 +98,17 @@ export function AppShell() {
               >
                 <CvPanel />
               </motion.div>
+            ) : hasHydrated ? (
+              <motion.div
+                key="home"
+                initial={{ opacity: 0, y: 24, scale: 0.985 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -16, scale: 0.985 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                className="min-h-full px-6 pt-5 md:px-10"
+              >
+                <HomeScreen />
+              </motion.div>
             ) : (
               <motion.div key="loading" className="grid h-full place-items-center" exit={{ opacity: 0 }}>
                 <Logo className="animate-pulse" />
@@ -109,7 +117,9 @@ export function AppShell() {
           </AnimatePresence>
         </main>
 
-        {/* divisor arrastável entre o CV e o chat */}
+        {/* divisor arrastável entre o CV e o chat: só com sessão */}
+        {hasHydrated && session && (
+          <>
         <div
           role="separator"
           aria-orientation="vertical"
@@ -133,8 +143,10 @@ export function AppShell() {
           style={{ width: chatWidth }}
           className={cn("glass-clear hidden shrink-0 overflow-hidden rounded-2xl lg:flex lg:flex-col", dragging && "select-none")}
         >
-          {hasHydrated && session && <AgentSidebar key={session.id} />}
+          <AgentSidebar key={session.id} />
         </motion.aside>
+          </>
+        )}
       </div>
     </div>
   );

@@ -16,9 +16,12 @@ import { Tool, ToolContent, ToolInput, ToolOutput } from "@/components/ai-elemen
 import { SkillLoadedRow, SkillToolHeader } from "./skill-activity";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { useActiveSession, useSessions } from "@/lib/store/sessions";
-import { ScoreCard } from "./tool-cards/score-card";
-import { FormatCard } from "./tool-cards/format-card";
-import { RoleMatchCard } from "./tool-cards/role-match-card";
+import { useHighlights } from "@/lib/store/highlights";
+import { useEditProposal } from "@/lib/store/edit-proposal";
+import type { CvHighlight } from "@/lib/cv/refs";
+import { ScoreCard, scoreHighlights } from "./tool-cards/score-card";
+import { FormatCard, formatHighlights } from "./tool-cards/format-card";
+import { RoleMatchCard, roleHighlights } from "./tool-cards/role-match-card";
 import { EditProposalCard } from "./tool-cards/edit-proposal-card";
 
 
@@ -60,6 +63,9 @@ export function AgentSidebar() {
   useEffect(() => {
     if (status === "ready" || status === "error") setMessages(session.id, messages);
   }, [messages, status, session.id, setMessages]);
+
+  useAutoHighlights(messages);
+  const clearHighlights = useHighlights((s) => s.clear);
 
   const busy = status === "submitted" || status === "streaming";
   const activity = busy ? findActivity(messages) : null;
@@ -147,12 +153,19 @@ export function AgentSidebar() {
                           return (
                             <motion.div
                               key={part.toolCallId}
+                              data-tool-call={part.toolCallId}
                               initial={{ opacity: 0, scale: 0.97 }}
                               animate={{ opacity: 1, scale: 1 }}
                               transition={{ type: "spring", stiffness: 300, damping: 26 }}
+                              className="rounded-2xl"
                             >
                               <Tool defaultOpen={part.state === "output-available" || part.state === "output-error"} className="gradient-border mb-0 rounded-2xl">
-                                <SkillToolHeader name={part.type.replace("tool-", "")} state={part.state} subtitle={SKILL_SUBTITLES[part.type]} />
+                                <SkillToolHeader
+                                  name={part.type.replace("tool-", "")}
+                                  state={part.state}
+                                  subtitle={SKILL_SUBTITLES[part.type]}
+                                  autoLoaded={part.state === "output-available" && Boolean((part.output as { autoLoaded?: boolean }).autoLoaded)}
+                                />
                                 <ToolContent className="collapsible-fluid">
                                   {part.state === "input-streaming" && <Shimmer>Preparando a skill…</Shimmer>}
                                   {part.state === "input-available" && <Shimmer>{`Executando ${part.type.replace("tool-", "")}…`}</Shimmer>}
@@ -188,7 +201,11 @@ export function AgentSidebar() {
         <ChatComposer
           ref={composerRef}
           status={status}
-          onSend={(text) => sendMessage({ text })}
+          onSend={(text) => {
+            // Nova pergunta, nova "onda" de tools: os destaques da anterior saem do painel.
+            clearHighlights();
+            void sendMessage({ text });
+          }}
           onStop={stop}
           placeholder="Peça uma análise, cole o link de uma vaga ou diga o que mudar…"
         />
@@ -198,6 +215,62 @@ export function AgentSidebar() {
 }
 
 type SkillPart = Extract<CvAgentUIMessage["parts"][number], { type: `tool-${string}` }>;
+
+/**
+ * Quando uma tool termina, fixa no painel do CV os trechos que ela mencionou;
+ * o cv_editor abre a revisão (diff) no painel. O histórico carregado do storage
+ * não dispara (só chamadas novas desta sessão); ao desmontar (troca de sessão)
+ * destaques e revisão são limpos.
+ */
+function useAutoHighlights(messages: CvAgentUIMessage[]) {
+  const pin = useHighlights((s) => s.pin);
+  const clear = useHighlights((s) => s.clear);
+  const propose = useEditProposal((s) => s.propose);
+  const dismiss = useEditProposal((s) => s.dismiss);
+  const seen = useRef<Set<string> | null>(null);
+
+  useEffect(() => {
+    if (!seen.current) {
+      seen.current = new Set(messages.flatMap((m) => m.parts.flatMap((p) => ("toolCallId" in p ? [p.toolCallId] : []))));
+      return;
+    }
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+    for (const p of last.parts) {
+      if (!p.type.startsWith("tool-") || !("toolCallId" in p) || seen.current.has(p.toolCallId)) continue;
+      if (p.state !== "output-available") continue;
+      seen.current.add(p.toolCallId);
+      if (p.type === "tool-cv_editor") {
+        propose({ toolCallId: p.toolCallId, newCv: p.output.newCv, summary: p.output.summary });
+        continue;
+      }
+      const items = highlightsFor(p as SkillPart);
+      if (items.length) pin(p.type.replace("tool-", ""), items, p.toolCallId);
+    }
+  }, [messages, pin, propose]);
+
+  useEffect(
+    () => () => {
+      clear();
+      dismiss();
+    },
+    [clear, dismiss],
+  );
+}
+
+function highlightsFor(part: SkillPart): CvHighlight[] {
+  if (part.state !== "output-available") return [];
+  switch (part.type) {
+    case "tool-cv_scorer":
+      return scoreHighlights(part.output);
+    case "tool-format_checker":
+      return formatHighlights(part.output);
+    case "tool-role_matcher":
+      return roleHighlights(part.output);
+    default:
+      return [];
+  }
+}
 
 /**
  * O StickToBottom só acompanha se o usuário já estava no fim. Ao enviar uma
@@ -245,7 +318,7 @@ function renderSkillOutput(part: SkillPart) {
     case "tool-role_matcher":
       return <RoleMatchCard output={part.output} />;
     case "tool-cv_editor":
-      return <EditProposalCard output={part.output} />;
+      return <EditProposalCard output={part.output} toolCallId={part.toolCallId} />;
     default:
       return <ToolOutput output={JSON.stringify(part)} errorText={undefined} />;
   }

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { skillModel } from "@/agent/models";
 import { parseCv } from "@/lib/cv/parse";
 import { requireLoaded, type SkillContext } from "../context";
-import { loadSkillDoc } from "../registry";
+import { autoLoadNote, loadSkillDoc } from "../registry";
 
 export const scoreSchema = z.object({
   overall: z.number().min(0).max(100),
@@ -14,6 +14,7 @@ export const scoreSchema = z.object({
       score: z.number().min(0).max(100),
       weight: z.number(),
       rationale: z.string(),
+      evidence: z.array(z.string()).max(2).describe("Até 2 trechos do CV copiados EXATAMENTE que mais pesaram nesta nota"),
     }),
   ),
   strengths: z.array(z.string()).max(5),
@@ -25,6 +26,7 @@ export const scoreSchema = z.object({
       action: z.string(),
       // Structured outputs da Groq exigem todas as chaves em `required`: use nullable, nunca optional.
       example: z.string().nullable().describe("Exemplo reescrito, ou null se não aplicável"),
+      quote: z.string().nullable().describe("Trecho do CV copiado EXATAMENTE que esta ação altera, ou null"),
     }),
   ).max(5),
   missingKeywords: z.array(z.string()).max(15),
@@ -49,7 +51,7 @@ export function createCvScorer(ctx: SkillContext) {
       jobKeywords: z.array(z.string()).nullish().describe("Keywords vindas do role_matcher, se já executado"),
     }),
     execute: async ({ targetRole, jobKeywords }) => {
-      requireLoaded(ctx, "cv_scorer");
+      const autoLoaded = requireLoaded(ctx, "cv_scorer");
       if (!ctx.cv.trim()) throw new Error("O CV está vazio. Peça ao usuário para colar ou enviar o currículo.");
       const parsed = parseCv(ctx.cv);
 
@@ -67,7 +69,7 @@ Dados extraídos automaticamente (use como evidência):
 - ${parsed.actionVerbBullets} bullets com verbo de ação, ${parsed.quantifiedBullets} quantificados
 - Seções: ${parsed.sections.map((s) => s.title).join(" | ") || "nenhuma detectada"}
 
-Regras: cada dimensão recebe "score" de 0 a 100 (NÃO é o peso; o peso só informa a importância: ${JSON.stringify(WEIGHTS)}); copie o peso no campo "weight"; seja específico (cite trechos); respostas em português; "example" deve ser um bullet reescrito real quando a ação for reescrever.
+Regras: cada dimensão recebe "score" de 0 a 100 (NÃO é o peso; o peso só informa a importância: ${JSON.stringify(WEIGHTS)}); copie o peso no campo "weight"; seja específico (cite trechos); respostas em português; "example" deve ser um bullet reescrito real quando a ação for reescrever; "evidence" e "quote" são cópias EXATAS de linhas do CV (a interface usa para localizar o trecho).
 
 ### CV
 ${ctx.cv}`,
@@ -80,12 +82,13 @@ ${ctx.cv}`,
       const band =
         overall >= 85 ? "pronto para vagas competitivas" : overall >= 70 ? "bom, ajustes pontuais" : overall >= 50 ? "precisa de revisão estrutural" : "reescrever com apoio do cv_editor";
 
-      return { ...object, overall, band, dimensions: object.dimensions.map((d) => ({ ...d, weight: WEIGHTS[d.name] ?? d.weight })) };
+      return { ...object, overall, band, dimensions: object.dimensions.map((d) => ({ ...d, weight: WEIGHTS[d.name] ?? d.weight })), autoLoaded };
     },
     // O card recebe tudo; o modelo só vê o essencial para comentar.
     toModelOutput: ({ output }) => ({
       type: "json",
       value: {
+        ...(output.autoLoaded ? { skillNote: autoLoadNote(doc) } : {}),
         overall: output.overall,
         band: output.band,
         verdict: output.verdict,

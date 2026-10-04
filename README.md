@@ -35,11 +35,17 @@ Interface no estilo *Claude Design* voltada a currículos: o **CV atual fica no 
 | `role_matcher` | Recebe links de vagas (LinkedIn, Gupy…) ou um cargo-alvo, faz **rodadas de web search** (built-in `browser_search` da Groq) e devolve requisitos, keywords de ATS e o % de aderência do CV |
 | `format_checker` | Confere o CV contra padrões de mercado (Harvard/reverse-chronological, ATS, tamanho, verbos de ação, resultados quantificados) → checklist pass/warn/fail |
 | `cv_scorer` | Análise profunda com rubrica de 6 dimensões ponderadas → **nota 0–100**, pontos fortes/fracos e plano de melhoria |
-| `cv_editor` | Propõe o CV inteiro reescrito; o usuário pré-visualiza e aplica (com *desfazer*) |
+| `cv_editor` | Propõe o CV inteiro reescrito; a revisão aparece como diff no painel, bloco a bloco, com aceitar/recusar (e *desfazer*) |
 
 Cada skill é uma pasta com `SKILL.md` (conhecimento em linguagem natural) e `index.ts` (tool executável com schema `zod`).
 
 **Carregamento progressivo.** O system prompt lista só nome, descrição e "quando usar" de cada skill. Quando o agente decide usar uma, ele chama `load_skill({ names })`, que devolve o `SKILL.md` completo (regras, rubrica, como apresentar); só depois a tool da skill fica disponível (`prepareStep` → `activeTools`). No chat isso aparece como dois eventos distintos: **skill carregada** (linha tracejada com o documento) e **tool executada** (card com o resultado).
+
+**Tools que apontam no CV.** Quando uma tool cita uma parte do currículo (um bullet sem número, a seção de Habilidades, o cabeçalho), o painel ao lado desenha um **retângulo tracejado** em cada trecho citado, com rótulo e cor (atenção, falha, evidência). As tools devolvem referências (`quote` = trecho exato, `section`, `header`) e a interface as localiza no documento renderizado. Passe o mouse em uma linha do card para ver só aquele trecho; clique para fixar; clique na marcação no CV para voltar ao item do chat.
+
+**Revisão do `cv_editor` no próprio CV.** A proposta aparece como um diff dentro do painel: cada bloco alterado mostra o antes (riscado) e o depois, com **Aceitar** / **Recusar** ali mesmo. Aceitar um bloco aplica só ele (dá para desfazer); recusar o tira da proposta. Também há "aceitar tudo / recusar tudo" no cabeçalho.
+
+**Versões.** Toda alteração (edição manual, upload, cv_editor, restauração) vira uma versão com hora e origem. O chip `vN` do painel abre o histórico: dá para abrir qualquer versão, ver o diff dela com a atual e restaurá-la com um clique (a atual vai para o histórico, nada se perde).
 
 ---
 

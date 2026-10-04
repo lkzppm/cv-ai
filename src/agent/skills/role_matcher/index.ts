@@ -3,7 +3,7 @@ import { z } from "zod";
 import { groq, searchModel } from "@/agent/models";
 import { fetchPageText } from "@/lib/web/fetch-page";
 import { requireLoaded, type SkillContext } from "../context";
-import { loadSkillDoc } from "../registry";
+import { autoLoadNote, loadSkillDoc } from "../registry";
 
 export const roleMatchSchema = z.object({
   roles: z.array(
@@ -24,6 +24,7 @@ export const roleMatchSchema = z.object({
     matched: z.array(z.string()),
     missing: z.array(z.string()),
     suggestions: z.array(z.string()),
+    evidence: z.array(z.string()).nullish().describe("Trechos do CV copiados EXATAMENTE que comprovam os itens de matched"),
   }),
 });
 export type RoleMatchResult = z.infer<typeof roleMatchSchema>;
@@ -65,7 +66,7 @@ export function createRoleMatcher(ctx: SkillContext) {
         .describe("Cargo/empresa desejados quando não há link, ex.: 'Engenheiro de Dados Pleno em fintech'"),
     }),
     execute: async ({ jobUrls: urls, roleQuery }) => {
-      requireLoaded(ctx, "role_matcher");
+      const autoLoaded = requireLoaded(ctx, "role_matcher");
       // gpt-oss envia `null` em campos opcionais; normalizamos aqui.
       const jobUrls = urls ?? [];
       if (jobUrls.length === 0 && !roleQuery) {
@@ -111,9 +112,9 @@ ${ctx.cv || "(vazio)"}
 Produza APENAS um JSON válido (sem comentários) com o formato:
 {
   "roles": [{ "url": "", "title": "", "company": "", "seniority": "", "mustHave": [], "niceToHave": [], "atsKeywords": [], "marketInsights": [], "sources": [{"title":"","url":""}] }],
-  "match": { "score": 0-100, "matched": [], "missing": [], "suggestions": [] }
+  "match": { "score": 0-100, "matched": [], "missing": [], "suggestions": [], "evidence": [] }
 }
-Regras: "matched" = requisitos que o CV já evidencia; "missing" = requisitos ausentes ou fracos; "suggestions" = ações concretas (reescrever bullet X, adicionar keyword Y, estudar Z). Em português.`,
+Regras: "matched" = requisitos que o CV já evidencia; "missing" = requisitos ausentes ou fracos; "suggestions" = ações concretas (reescrever bullet X, adicionar keyword Y, estudar Z); "evidence" = até 6 trechos do CV copiados EXATAMENTE (bullets ou linhas) que comprovam os itens de "matched". Em português.`,
       });
 
       const parsed = extractJson<RoleMatchResult>(synthesis.text);
@@ -121,6 +122,7 @@ Regras: "matched" = requisitos que o CV já evidencia; "missing" = requisitos au
       if (!validated?.success) {
         return {
           ok: false as const,
+          autoLoaded,
           raw: synthesis.text,
           rounds: rounds.map((r) => ({ label: r.label, sources: r.sources })),
         };
@@ -130,12 +132,14 @@ Regras: "matched" = requisitos que o CV já evidencia; "missing" = requisitos au
       for (const role of validated.data.roles) {
         if (role.sources.length === 0) role.sources = allSources.slice(0, 6);
       }
-      return { ok: true as const, ...validated.data, roundsRun: rounds.length };
+      return { ok: true as const, autoLoaded, ...validated.data, roundsRun: rounds.length };
     },
     // Fontes e texto bruto ficam só no card; o modelo recebe requisitos + match.
     toModelOutput: ({ output }) => ({
       type: "json",
-      value: output.ok
+      value: {
+        ...(output.autoLoaded ? { skillNote: autoLoadNote(doc) } : {}),
+        ...(output.ok
         ? {
             ok: true,
             roles: output.roles.map((r) => ({
@@ -146,9 +150,10 @@ Regras: "matched" = requisitos que o CV já evidencia; "missing" = requisitos au
               niceToHave: r.niceToHave.slice(0, 8),
               atsKeywords: r.atsKeywords.slice(0, 25),
             })),
-            match: output.match,
+            match: { ...output.match, evidence: undefined },
           }
-        : { ok: false, note: "A síntese não validou; o card mostra o texto bruto.", raw: output.raw.slice(0, 1500) },
+        : { ok: false, note: "A síntese não validou; o card mostra o texto bruto.", raw: output.raw.slice(0, 1500) }),
+      },
     }),
   });
 }

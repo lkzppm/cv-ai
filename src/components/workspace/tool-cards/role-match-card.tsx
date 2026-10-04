@@ -4,10 +4,25 @@ import { ExternalLinkIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import type { RoleMatchResult } from "@/agent/skills/role_matcher";
+import { quoteRefs, type CvHighlight } from "@/lib/cv/refs";
+import { Highlightable } from "../highlightable";
 
 type Output =
   | ({ ok: true; roundsRun: number } & RoleMatchResult)
   | { ok: false; raw: string; rounds: { label: string; sources: { title: string; url: string }[] }[] };
+
+const evidenceHighlight = (match: RoleMatchResult["match"]): CvHighlight => ({
+  refs: quoteRefs(match.evidence, 6),
+  label: "já evidenciado",
+  tone: "success",
+});
+
+/** Ao terminar, mostra no CV os trechos que comprovam os requisitos atendidos. */
+export function roleHighlights(output: Output): CvHighlight[] {
+  if (!output.ok) return [];
+  const h = evidenceHighlight(output.match);
+  return h.refs.length ? [h] : [];
+}
 
 export function RoleMatchCard({ output }: { output: Output }) {
   if (!output.ok) {
@@ -68,10 +83,10 @@ export function RoleMatchCard({ output }: { output: Output }) {
       ))}
 
       <div className="grid gap-2 sm:grid-cols-2">
-        <div className="rounded-md bg-success/10 p-2 text-xs">
+        <Highlightable item={evidenceHighlight(output.match)} className="bg-success/10 p-2 pr-6 text-xs">
           <div className="mb-1 font-semibold text-success">Já evidenciado</div>
           <ul className="list-disc pl-4">{output.match.matched.map((m) => <li key={m}>{m}</li>)}</ul>
-        </div>
+        </Highlightable>
         <div className="rounded-md bg-destructive/10 p-2 text-xs">
           <div className="mb-1 font-semibold text-destructive">Faltando / fraco</div>
           <ul className="list-disc pl-4">{output.match.missing.map((m) => <li key={m}>{m}</li>)}</ul>

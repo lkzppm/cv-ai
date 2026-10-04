@@ -5,14 +5,17 @@ import { persist } from "zustand/middleware";
 import type { UIMessage } from "ai";
 import { SAMPLE_CV } from "@/lib/cv/sample";
 
+/** Uma versão anterior do CV: texto, quando foi substituída e por quem. */
+export type CvVersion = { cv: string; at: number; label?: string };
+
 export type Session = {
   id: string;
   title: string;
   createdAt: number;
   updatedAt: number;
   cv: string;
-  /** Versões anteriores do CV (mais recente por último) para desfazer. */
-  cvHistory: string[];
+  /** Versões anteriores do CV (mais antiga primeiro); a atual é `cv` = v(length + 1). */
+  cvHistory: CvVersion[];
   messages: UIMessage[];
 };
 
@@ -29,8 +32,10 @@ type Actions = {
   setActive: (id: string) => void;
   deleteSession: (id: string) => void;
   renameSession: (id: string, title: string) => void;
-  setCv: (cv: string, opts?: { recordHistory?: boolean }) => void;
+  setCv: (cv: string, opts?: { recordHistory?: boolean; label?: string }) => void;
   undoCv: () => void;
+  /** Torna uma versão antiga a atual, registrando a atual no histórico. */
+  restoreCv: (index: number) => void;
   setMessages: (id: string, messages: UIMessage[]) => void;
   toggleTheme: () => void;
   setChatWidth: (px: number) => void;
@@ -71,14 +76,15 @@ export const useSessions = create<State & Actions>()(
         }),
       renameSession: (id, title) =>
         set((s) => ({ sessions: s.sessions.map((x) => (x.id === id ? { ...x, title, updatedAt: Date.now() } : x)) })),
-      setCv: (cv, { recordHistory = true } = {}) =>
+      setCv: (cv, { recordHistory = true, label } = {}) =>
         set((s) => ({
           sessions: s.sessions.map((x) =>
             x.id === s.activeId
               ? {
                   ...x,
                   cv,
-                  cvHistory: recordHistory && x.cv !== cv ? [...x.cvHistory.slice(-19), x.cv] : x.cvHistory,
+                  cvHistory:
+                    recordHistory && x.cv !== cv ? [...x.cvHistory.slice(-19), { cv: x.cv, at: Date.now(), label }] : x.cvHistory,
                   updatedAt: Date.now(),
                 }
               : x,
@@ -89,10 +95,16 @@ export const useSessions = create<State & Actions>()(
           sessions: s.sessions.map((x) => {
             if (x.id !== s.activeId || x.cvHistory.length === 0) return x;
             const history = [...x.cvHistory];
-            const cv = history.pop()!;
+            const { cv } = history.pop()!;
             return { ...x, cv, cvHistory: history, updatedAt: Date.now() };
           }),
         })),
+      restoreCv: (index) => {
+        const session = get().sessions.find((x) => x.id === get().activeId);
+        const version = session?.cvHistory[index];
+        if (!version) return;
+        get().setCv(version.cv, { label: `restaurada de v${index + 1}` });
+      },
       setMessages: (id, messages) =>
         set((s) => ({
           sessions: s.sessions.map((x) => {
@@ -114,10 +126,22 @@ export const useSessions = create<State & Actions>()(
     }),
     {
       name: "cv-ai:sessions",
-      version: 2,
+      version: 3,
       migrate: (persisted, version) => {
-        const state = persisted as State;
-        if (version < 2) return { ...state, theme: "dark" as const };
+        let state = persisted as State;
+        if (version < 2) state = { ...state, theme: "dark" as const };
+        if (version < 3) {
+          // v2 guardava só o texto de cada versão.
+          state = {
+            ...state,
+            sessions: state.sessions.map((x) => ({
+              ...x,
+              cvHistory: (x.cvHistory as unknown as (string | CvVersion)[]).map((h) =>
+                typeof h === "string" ? { cv: h, at: x.updatedAt, label: "versão anterior" } : h,
+              ),
+            })),
+          };
+        }
         return state;
       },
     },

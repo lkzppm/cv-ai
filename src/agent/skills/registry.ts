@@ -12,6 +12,20 @@ import path from "node:path";
  * mesmo espírito do padrão "Agent Skills" (instruções progressivas que o
  * modelo carrega quando precisa).
  */
+/** Remove do SKILL.md as seções que só interessam ao código (como funciona, padrões de referência). */
+export function agentRelevant(body: string) {
+  return body
+    .split(/\n(?=## )/)
+    .filter((section) => !/^## (como funciona|padr(ões|oes) de refer)/i.test(section))
+    .join("\n")
+    .trim();
+}
+
+/** Texto que acompanha o resultado quando a tool rodou sem `load_skill` antes. */
+export function autoLoadNote(doc: SkillDoc) {
+  return `A skill "${doc.name}" não tinha sido carregada; foi carregada agora junto com esta execução. Apresente o resultado seguindo estas instruções:\n\n${agentRelevant(doc.instructions)}`;
+}
+
 export type SkillDoc = {
   name: string;
   description: string;

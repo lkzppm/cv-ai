@@ -71,7 +71,7 @@ export function SkillLoadedRow({
 }
 
 /** Cabeçalho do card de execução de uma tool de skill (pt-BR, com ícone da skill). */
-export function SkillToolHeader({ name, state, subtitle }: { name: string; state: State; subtitle?: string }) {
+export function SkillToolHeader({ name, state, subtitle, autoLoaded }: { name: string; state: State; subtitle?: string; autoLoaded?: boolean }) {
   const meta = SKILLS_META.find((m) => m.key === name);
   const Icon = meta?.icon ?? WrenchIcon;
   return (
@@ -84,6 +84,14 @@ export function SkillToolHeader({ name, state, subtitle }: { name: string; state
         <span className="truncate text-sm font-medium">
           {name}
           {subtitle && <span className="text-muted-foreground"> · {subtitle}</span>}
+          {autoLoaded && (
+            <span
+              title="O agente chamou a tool sem load_skill; a skill foi carregada junto com esta execução."
+              className="ml-2 rounded-full border border-dashed border-primary/50 bg-primary/[0.06] px-1.5 py-px text-[10px] font-medium text-primary"
+            >
+              skill carregada aqui
+            </span>
+          )}
         </span>
         <StatePill state={state} />
       </div>
