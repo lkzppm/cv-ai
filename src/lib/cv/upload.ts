@@ -11,7 +11,8 @@ export async function parseCvFile(file: File): Promise<string> {
   const res = await fetch("/api/parse-cv", { method: "POST", body: fd });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? "Falha ao ler arquivo");
-  return data.markdown ?? data.text ?? "";
+  // `markdown` vem null quando a conversão falha; o texto bruto ainda é útil.
+  return data.markdown || data.text || "";
 }
 
 export const CV_FILE_ACCEPT = ".pdf,.md,.txt,text/plain,text/markdown,application/pdf";
