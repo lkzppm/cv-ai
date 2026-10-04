@@ -36,8 +36,10 @@ export function SessionsRail() {
           </IconButton>
         </div>
 
-        <ScrollArea className="scrollbar-none min-h-0 flex-1 px-2 pb-2">
-          <ul className="space-y-1">
+        {/* O Viewport do Radix envolve o conteúdo num div `display: table`, que cresce
+            até a largura do título mais longo e empurra os botões para fora do rail. */}
+        <ScrollArea className="scrollbar-none min-h-0 flex-1 px-2 pb-2 [&_[data-slot=scroll-area-viewport]>div]:block!">
+          <ul className="w-full min-w-0 space-y-1">
             <AnimatePresence initial={false}>
               {sessions.map((s) => {
                 const active = s.id === activeId;
