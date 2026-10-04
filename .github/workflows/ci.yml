@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: lint · tsc · build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # O build não chama a API; a chave só precisa existir para o provider instanciar.
+      GROQ_API_KEY: ci-placeholder
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        # versão lida do campo "packageManager" do package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache do Next.js
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**/*.{ts,tsx,css}') }}
+          restore-keys: |
+            next-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Tipos
+        # `next typegen` gera os tipos globais de rotas (LayoutProps, PageProps) em .next/types
+        run: pnpm exec next typegen && pnpm exec tsc --noEmit
+
+      - name: Build
+        run: pnpm build
