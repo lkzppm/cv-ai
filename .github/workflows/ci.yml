@@ -45,7 +45,8 @@ jobs:
         run: pnpm lint
 
       - name: Tipos
-        run: pnpm exec tsc --noEmit
+        # `next typegen` gera os tipos globais de rotas (LayoutProps, PageProps) em .next/types
+        run: pnpm exec next typegen && pnpm exec tsc --noEmit
 
       - name: Build
         run: pnpm build
