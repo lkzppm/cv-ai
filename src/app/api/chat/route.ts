@@ -1,6 +1,6 @@
 import { convertToModelMessages, createUIMessageStreamResponse, toUIMessageStream } from "ai";
 import { createCvAgent, type CvAgentUIMessage } from "@/agent";
-import type { SkillName } from "@/agent/skills";
+import { SKILL_NAMES, type SkillName } from "@/agent/skills";
 
 export const maxDuration = 120;
 
@@ -16,6 +16,13 @@ export async function POST(req: Request) {
     for (const p of m.parts) {
       if (p.type === "tool-load_skill" && p.state === "output-available") {
         for (const s of p.output.skills) loaded.add(s.name);
+        continue;
+      }
+      // Tool executada sem load_skill: a skill foi carregada implicitamente naquela chamada.
+      if (p.type.startsWith("tool-") && "state" in p && p.state === "output-available") {
+        const name = p.type.slice(5) as SkillName;
+        const out = (p as { output?: { autoLoaded?: boolean } }).output;
+        if (SKILL_NAMES.includes(name) && out?.autoLoaded) loaded.add(name);
       }
     }
   }

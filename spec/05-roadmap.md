@@ -16,6 +16,7 @@
 
 - [x] Branches `main` ← `dev` ← `feat/*`; CI no GitHub Actions (lint, `next typegen` + tsc, build) em push/PR para `main` e `dev`. Deploy futuro: Vercel.
 - [x] **Tools interativas com o CV** (`feat/cv-highlights`): cada tool devolve `CvRef[]` e o painel desenha retângulos tracejados nas partes citadas (várias ao mesmo tempo); hover/clique no card foca um item; fixação automática ao terminar a tool. `format_checker` passou a avaliar verbo de ação/quantificação só nos bullets de experiência/projetos.
+- [x] **Gate macio das skills** (`fix/soft-skill-gate`): o 400 da Groq ("tool not in request.tools") sumiu; chamada sem `load_skill` carrega a skill na hora e sinaliza no card. Homepage sem a grade de skills (seta para o ⓘ).
 - [x] **Histórico de versões navegável** (`feat/cv-versions`): menu no chip vN, visualização de qualquer versão, diff com a atual e restaurar; versões carimbadas com origem e hora.
 - [x] **Upload de PDF do Canva** (`fix/pdf-extraction`): extração ordenada por layout e conversão no 120b com reasoning baixo; antes o CV ficava vazio.
 - [x] **Homepage sem sessão** (`fix/home-empty-state`): três formas de começar (enviar, colar, exemplo); corrige o `TypeError` de `session.cv` ao excluir a última sessão.
@@ -30,7 +31,7 @@
 5. **Avaliação das skills**: conjunto de CVs de teste + notas esperadas; medir estabilidade do `cv_scorer` (repetir 5x e ver variância).
 6. **Skill `cover_letter`** e **skill `interview_prep`** (gera perguntas prováveis a partir da vaga).
 7. **Rate limiting** no `/api/chat` antes de publicar.
-8. **Reforçar o protocolo no 20b**: sem o gate de `activeTools`, o gpt-oss-20b às vezes chamava a tool sem carregar e, ao receber o erro, respondia em texto em vez de corrigir. O gate resolve; vale manter o teste `pnpm smoke edit` como regressão.
+8. **Protocolo no 20b**: o gate por `activeTools` foi removido (causava 400 na Groq); com o gate macio a chamada direta funciona e o modelo recebe as instruções junto do resultado. Vale medir com que frequência o 20b pula o `load_skill`.
 9. **Destaques**: a resposta em texto do agente não gera refs (só as tools). Uma tool leve `point_to({ quotes })` deixaria o modelo apontar trechos ao conversar.
 10. **Latência no free tier**: cache do resultado do `format_checker` por hash do CV (evita recomputar quando o usuário só pede a nota em seguida) e/ou Dev Tier da Groq.
 

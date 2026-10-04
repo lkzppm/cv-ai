@@ -1,18 +1,9 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { SKILL_NAMES, type SkillContext } from "../context";
-import { loadSkillDoc } from "../registry";
+import { loadSkillDoc, agentRelevant } from "../registry";
 
-/** Seções do SKILL.md que só interessam às chamadas internas da skill (não ao agente). */
-const INTERNAL_SECTION = /^## (como funciona|padr(ões|oes) de refer)/i;
 
-function agentRelevant(body: string) {
-  return body
-    .split(/^(?=## )/m)
-    .filter((p) => !INTERNAL_SECTION.test(p.trim()))
-    .join("")
-    .trim();
-}
 
 /**
  * load_skill: carregamento progressivo (padrão "Agent Skills").

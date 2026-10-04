@@ -4,7 +4,7 @@ import { skillModel } from "@/agent/models";
 import { FIRST_PERSON_RE, hasSection, isQuantified, parseCv, startsWithActionVerb, type ParsedCv } from "@/lib/cv/parse";
 import { headerRef, quoteRefs, sectionRef, type CvRef } from "@/lib/cv/refs";
 import { requireLoaded, type SkillContext } from "../context";
-import { loadSkillDoc } from "../registry";
+import { autoLoadNote, loadSkillDoc } from "../registry";
 
 export const checkSchema = z.object({
   id: z.string(),
@@ -143,7 +143,7 @@ export function createFormatChecker(ctx: SkillContext) {
         .describe("Opcional: aspecto específico a verificar (ex.: 'ATS', 'tamanho', 'bullets')"),
     }),
     execute: async ({ focus }) => {
-      requireLoaded(ctx, "format_checker");
+      const autoLoaded = requireLoaded(ctx, "format_checker");
       if (!ctx.cv.trim()) throw new Error("O CV está vazio. Peça ao usuário para colar ou enviar o currículo.");
       const parsed = parseCv(ctx.cv);
       const deterministic = deterministicChecks(parsed, ctx.cv);
@@ -184,12 +184,14 @@ ${ctx.cv}`,
         },
         checks,
         topFixes: qualitative.topFixes,
+        autoLoaded,
       };
     },
     // O card recebe o output completo; o modelo só vê o resumo (economia de tokens).
     toModelOutput: ({ output }) => ({
       type: "json",
       value: {
+        ...(output.autoLoaded ? { skillNote: autoLoadNote(doc) } : {}),
         score: output.score,
         summary: output.summary,
         words: output.stats.words,
