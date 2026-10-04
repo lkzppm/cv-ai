@@ -58,7 +58,7 @@ src/agent/skills/<nome>/
 
 ### cv_editor
 - Input: `{ newCv: string (Markdown completo), summary: string[] }` — o próprio modelo escreve o documento.
-- `execute` só calcula estatísticas. O card no cliente tem **Pré-visualizar** e **Aplicar** (→ `store.setCv`, com histórico para **Desfazer**).
+- `execute` só calcula estatísticas. A revisão acontece **no painel do CV** como diff por blocos (`lib/cv/diff.ts`, `cv-diff-view.tsx`): aceitar um bloco aplica só ele (`store.setCv`, com **Desfazer**); recusar tira o bloco da proposta. O card mostra o resumo e "Aceitar tudo / Recusar tudo"; sem revisão aberta (ex.: após recarregar), "Revisar no CV" reabre. (2026-10-04)
 
 ## Referências ao CV (`CvRef`) — 2026-10-04
 
@@ -75,7 +75,7 @@ Onde cada skill produz refs:
 - **format_checker** — checagens determinísticas calculam `refs` no servidor (contato/nome → `header`; seções/datas → `section`; verbos/quantificação → `quote` dos bullets fracos **de experiência/projetos**, não de habilidades; primeira pessoa → linhas com "eu/meu"). As qualitativas pedem `evidence: string[]` ao modelo (trechos copiados exatamente), convertido em `quote`.
 - **cv_scorer** — `dimensions[].evidence` (até 2 trechos) e `improvementPlan[].quote` (trecho a alterar, ou `null` → o card usa `section`).
 - **role_matcher** — `match.evidence` (trechos que comprovam os `matched`); fica fora do `toModelOutput`.
-- **cv_editor** — `changed: CvRef[]` calculado por `changedLineRefs(cvAtual, newCv)`: linhas do CV atual que mudam ou somem.
+- **cv_editor** — não devolve refs: a UI calcula o diff entre o CV atual e `newCv` e mostra antes/depois no próprio painel.
 
 Regra de prompt: peça sempre cópia **exata** ("copie EXATAMENTE") — paráfrases não resolvem no DOM. Os campos de evidência não vão para o modelo (`toModelOutput`), só para o card.
 

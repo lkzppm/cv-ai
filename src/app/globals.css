@@ -530,3 +530,98 @@
 @media print {
   .cv-highlight { display: none; }
 }
+
+/* Marcação clicável: leva ao item do card no chat. */
+.cv-highlight {
+  pointer-events: auto;
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+.cv-highlight:hover {
+  background: color-mix(in oklab, var(--hl) 12%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--hl) 10%, transparent);
+}
+
+/* Pisca o alvo no chat ao chegar vindo do painel. */
+@keyframes hl-flash {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 55%, transparent); background: color-mix(in oklab, var(--primary) 14%, transparent); }
+  100% { box-shadow: 0 0 0 10px transparent; background: transparent; }
+}
+.hl-flash { animation: hl-flash 1.1s var(--ease-out-expo) 1; border-radius: 10px; }
+
+/* ------------------------------------------------------------------
+   Revisão do cv_editor: diff por blocos dentro do painel do CV.
+   ------------------------------------------------------------------ */
+.cv-hunk {
+  position: relative;
+  margin: 0.9rem -0.75rem;
+  padding: 0.35rem 0.75rem 0.5rem;
+  border: 1.5px dashed color-mix(in oklab, var(--warning) 70%, transparent);
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--warning) 4%, transparent);
+}
+.cv-hunk-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+  font-size: 10.5px;
+}
+.cv-hunk-title {
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--warning);
+  cursor: pointer;
+}
+.cv-hunk-title:hover { text-decoration: underline; text-underline-offset: 2px; }
+.cv-hunk-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  transition: background-color 0.15s;
+}
+.cv-hunk-btn-accept { color: var(--success); background: color-mix(in oklab, var(--success) 14%, transparent); }
+.cv-hunk-btn-accept:hover { background: color-mix(in oklab, var(--success) 24%, transparent); }
+.cv-hunk-btn-reject { color: var(--destructive); background: color-mix(in oklab, var(--destructive) 10%, transparent); }
+.cv-hunk-btn-reject:hover { background: color-mix(in oklab, var(--destructive) 20%, transparent); }
+.cv-hunk-old,
+.cv-hunk-new {
+  position: relative;
+  padding: 0.25rem 0.6rem 0.25rem 1.5rem;
+  border-radius: 8px;
+}
+.cv-hunk-old {
+  background: color-mix(in oklab, var(--destructive) 7%, transparent);
+  box-shadow: inset 3px 0 0 var(--destructive);
+  opacity: 0.72;
+}
+.cv-hunk-old .cv-doc { text-decoration: line-through; text-decoration-color: color-mix(in oklab, var(--destructive) 55%, transparent); text-decoration-thickness: 1px; }
+.cv-hunk-new {
+  margin-top: 0.3rem;
+  background: color-mix(in oklab, var(--success) 8%, transparent);
+  box-shadow: inset 3px 0 0 var(--success);
+}
+.cv-hunk-sign {
+  position: absolute;
+  top: 0.55rem;
+  left: 0.45rem;
+  width: 12px;
+  height: 12px;
+  opacity: 0.8;
+}
+.cv-hunk-old .cv-hunk-sign { color: var(--destructive); }
+.cv-hunk-new .cv-hunk-sign { color: var(--success); }
+/* Dentro de um bloco, títulos não precisam do respiro de seção. */
+.cv-hunk .cv-doc h2 { margin-top: 0.25rem; }
+.cv-hunk .cv-doc h3 { margin-top: 0.25rem; }
+.cv-hunk .cv-doc ul { margin-top: 0.25rem; }
+@media print {
+  .cv-hunk-bar, .cv-hunk-old, .cv-hunk-sign { display: none; }
+  .cv-hunk { border: 0; margin: 0; padding: 0; background: none; }
+  .cv-hunk-new { box-shadow: none; background: none; padding: 0; }
+}

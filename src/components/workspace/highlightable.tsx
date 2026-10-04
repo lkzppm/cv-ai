@@ -36,6 +36,7 @@ export function Highlightable({ item, bare, className, children, onClick, ...pro
       role="button"
       tabIndex={0}
       aria-pressed={focused}
+      data-hl-key={highlightKey(item)}
       title="Mostrar no CV"
       onMouseEnter={() => setHover(item)}
       onMouseLeave={() => setHover(null)}
