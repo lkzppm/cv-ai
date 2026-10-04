@@ -7,7 +7,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CV Agent — análise de currículo com skills",
+  title: "CV Agent",
   description:
     "Agente de IA que analisa, pontua e reescreve seu currículo usando skills (role_matcher, format_checker, cv_scorer, cv_editor). Next.js + AI SDK + Groq.",
 };

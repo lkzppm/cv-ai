@@ -24,6 +24,7 @@ export const roleMatchSchema = z.object({
     matched: z.array(z.string()),
     missing: z.array(z.string()),
     suggestions: z.array(z.string()),
+    evidence: z.array(z.string()).nullish().describe("Trechos do CV copiados EXATAMENTE que comprovam os itens de matched"),
   }),
 });
 export type RoleMatchResult = z.infer<typeof roleMatchSchema>;
@@ -111,9 +112,9 @@ ${ctx.cv || "(vazio)"}
 Produza APENAS um JSON válido (sem comentários) com o formato:
 {
   "roles": [{ "url": "", "title": "", "company": "", "seniority": "", "mustHave": [], "niceToHave": [], "atsKeywords": [], "marketInsights": [], "sources": [{"title":"","url":""}] }],
-  "match": { "score": 0-100, "matched": [], "missing": [], "suggestions": [] }
+  "match": { "score": 0-100, "matched": [], "missing": [], "suggestions": [], "evidence": [] }
 }
-Regras: "matched" = requisitos que o CV já evidencia; "missing" = requisitos ausentes ou fracos; "suggestions" = ações concretas (reescrever bullet X, adicionar keyword Y, estudar Z). Em português.`,
+Regras: "matched" = requisitos que o CV já evidencia; "missing" = requisitos ausentes ou fracos; "suggestions" = ações concretas (reescrever bullet X, adicionar keyword Y, estudar Z); "evidence" = até 6 trechos do CV copiados EXATAMENTE (bullets ou linhas) que comprovam os itens de "matched". Em português.`,
       });
 
       const parsed = extractJson<RoleMatchResult>(synthesis.text);
@@ -146,7 +147,7 @@ Regras: "matched" = requisitos que o CV já evidencia; "missing" = requisitos au
               niceToHave: r.niceToHave.slice(0, 8),
               atsKeywords: r.atsKeywords.slice(0, 25),
             })),
-            match: output.match,
+            match: { ...output.match, evidence: undefined },
           }
         : { ok: false, note: "A síntese não validou; o card mostra o texto bruto.", raw: output.raw.slice(0, 1500) },
     }),

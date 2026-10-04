@@ -16,6 +16,8 @@ Agente de IA que analisa currículos usando skills. Trabalho da disciplina de In
 - Uma skill = `src/agent/skills/<nome>/SKILL.md` + `index.ts` + card em `components/workspace/tool-cards/` + `case` em `agent-sidebar.tsx`. Passo a passo em `spec/02-agent-and-skills.md`.
 - Skills são carregadas sob demanda via `load_skill` (`prepareStep` → `activeTools`); todo `execute` começa com `requireLoaded(ctx, "<nome>")`. Teste sem navegador: `pnpm smoke <cenário>` / `pnpm skill <nome> '<json>'`.
 - O CV vai no `body` de cada request (`cv`), nunca no histórico de mensagens.
+- Tools que citam partes do CV devolvem `CvRef[]` (`src/lib/cv/refs.ts`: `quote` verbatim / `section` / `header`); o card exporta `xxxHighlights(output)` e usa `<Highlightable>`; a sidebar fixa em `highlightsFor()`. Peça ao modelo cópia EXATA dos trechos.
+- Branches: `main` ← `dev` ← `feat/*`. Commits com `/commit` (no branch da feature), integração com `/merge` (PR + CI). Nunca push direto na `main`.
 - Idioma da UI, prompts e docs: português do Brasil. Código e identificadores: inglês.
 - Commits: conventional commits (`feat:`, `fix:`, `docs:`…).
 

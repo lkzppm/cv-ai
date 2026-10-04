@@ -63,10 +63,20 @@ const PHONE_RE = /(\+?\d{1,3}[\s-]?)?\(?\d{2,3}\)?[\s-]?\d{4,5}[\s-]?\d{4}/;
 const LINKEDIN_RE = /linkedin\.com\/in\/[\w-]+/i;
 const GITHUB_RE = /github\.com\/[\w-]+/i;
 const DATE_RE = /\b(19|20)\d{2}\b|\b(jan|fev|feb|mar|abr|apr|mai|may|jun|jul|ago|aug|set|sep|out|oct|nov|dez|dec)[a-z]*\.?\s*(\/|de)?\s*(19|20)?\d{2}\b|\b(atual|present|current|presente)\b/i;
-const FIRST_PERSON_RE = /\b(eu|meu|minha|meus|minhas|I|my|me)\b/g;
+export const FIRST_PERSON_RE = /\b(eu|meu|minha|meus|minhas|I|my|me)\b/g;
 const QUANT_RE = /\d+\s?%|\bR?\$\s?\d|\d+\s?(k|mil|milh|m|x|usuários|users|clientes|customers|pessoas|people|projetos|projects|horas|hours|dias|days)\b|\d{2,}/i;
 
-function normalizeSection(title: string): SectionKind {
+/** Bullet começa com verbo de ação (PT ou EN)? */
+export function startsWithActionVerb(bullet: string) {
+  const first = bullet.toLowerCase().replace(/[^a-zà-ú]/gi, " ").trim().split(/\s+/)[0];
+  return ACTION_VERBS.includes(first);
+}
+
+/** Bullet traz número, % ou volume? */
+export const isQuantified = (bullet: string) => QUANT_RE.test(bullet);
+
+/** Tipo normalizado de um título de seção (ex.: "Experiência profissional" → "experience"). */
+export function sectionKindOf(title: string): SectionKind {
   const t = title.toLowerCase();
   for (const [kind, aliases] of Object.entries(SECTION_ALIASES) as [SectionKind, string[]][]) {
     if (aliases.some((a) => t.includes(a))) return kind;
@@ -90,13 +100,13 @@ export function parseCv(markdown: string): ParsedCv {
         name = title;
         continue;
       }
-      current = { title, normalized: normalizeSection(title), bullets: [], text: "" };
+      current = { title, normalized: sectionKindOf(title), bullets: [], text: "" };
       sections.push(current);
       continue;
     }
     // Linha em caixa alta isolada também conta como título (CVs em texto puro)
     if (!heading && line.length > 2 && line.length < 40 && line === line.toUpperCase() && /[A-ZÀ-Ú]/.test(line)) {
-      current = { title: line, normalized: normalizeSection(line), bullets: [], text: "" };
+      current = { title: line, normalized: sectionKindOf(line), bullets: [], text: "" };
       sections.push(current);
       continue;
     }
@@ -125,11 +135,8 @@ export function parseCv(markdown: string): ParsedCv {
     bullets,
     hasDates: DATE_RE.test(markdown),
     firstPersonHits,
-    quantifiedBullets: bullets.filter((b) => QUANT_RE.test(b)).length,
-    actionVerbBullets: bullets.filter((b) => {
-      const first = b.toLowerCase().replace(/[^a-zà-ú]/gi, " ").trim().split(/\s+/)[0];
-      return ACTION_VERBS.includes(first);
-    }).length,
+    quantifiedBullets: bullets.filter(isQuantified).length,
+    actionVerbBullets: bullets.filter(startsWithActionVerb).length,
   };
 }
 

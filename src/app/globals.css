@@ -492,3 +492,41 @@
   .print-area, .print-area * { visibility: visible; }
   .print-area { position: absolute; inset: 0; padding: 0 !important; box-shadow: none !important; border: 0 !important; background: white !important; color: black !important; }
 }
+
+/* ------------------------------------------------------------------
+   Destaques no painel do CV: retângulos tracejados posicionados por cima
+   do documento (cv-highlights.tsx). A cor vem de --hl por tom.
+   ------------------------------------------------------------------ */
+.cv-highlight {
+  --hl: var(--primary);
+  position: absolute;
+  pointer-events: none;
+  border: 1.5px dashed color-mix(in oklab, var(--hl) 72%, transparent);
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--hl) 6%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--hl) 5%, transparent);
+}
+.cv-highlight[data-tone="warning"] { --hl: var(--warning); }
+.cv-highlight[data-tone="destructive"] { --hl: var(--destructive); }
+.cv-highlight[data-tone="success"] { --hl: var(--success); }
+.cv-highlight-label {
+  position: absolute;
+  top: -9px;
+  left: 10px;
+  max-width: calc(100% - 20px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 14px;
+  color: var(--hl);
+  background: var(--card);
+  border: 1px dashed color-mix(in oklab, var(--hl) 60%, transparent);
+}
+@media print {
+  .cv-highlight { display: none; }
+}

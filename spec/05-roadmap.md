@@ -12,17 +12,23 @@
 - [x] **Testado com chave Groq real** (2026-10-03): 4 skills + 7 cenários via `pnpm smoke`. Bugs corrigidos: `null` em inputs opcionais (`.nullish()`), schema do `cv_scorer` rejeitado pelo structured output estrito (`.nullable()`), modelo inventava nota quando a skill falhava (regra no prompt), `###` contado como seção no parser, resposta do `cv_editor` mandava "copiar" em vez de clicar em Aplicar. Latência dominada pelo rate limit de 8k tokens/min: prompt do agente enxugado (8,6k → 6,1k chars) e `toModelOutput` nas 4 tools (13k → 8k chars no passo final; cenário "nota" 125 s → 57 s).
 - [x] Lint e `tsc` sem erros (AI Elements gerados são ignorados pelo ESLint)
 
+## Status em 2026-10-04
+
+- [x] Branches `main` ← `dev` ← `feat/*`; CI no GitHub Actions (lint, `next typegen` + tsc, build) em push/PR para `main` e `dev`. Deploy futuro: Vercel.
+- [x] **Tools interativas com o CV** (`feat/cv-highlights`): cada tool devolve `CvRef[]` e o painel desenha retângulos tracejados nas partes citadas (várias ao mesmo tempo); hover/clique no card foca um item; fixação automática ao terminar a tool. `format_checker` passou a avaliar verbo de ação/quantificação só nos bullets de experiência/projetos.
+
 ## Próximos passos sugeridos
 
 1. **Drawer da sidebar em telas < lg** (hoje fica oculta).
-2. **Diff visual** no card do `cv_editor` (antes/depois por linha).
+2. **Diff visual** no card do `cv_editor` (antes/depois por linha) — o destaque "vai mudar" já mostra o *antes*; falta o *depois* lado a lado.
 3. **Exportar PDF com layout** (ex.: `@react-pdf/renderer` ou print CSS mais refinado).
 4. **Persistência real** (Postgres + Drizzle) e login — permitiria compartilhar sessões.
 5. **Avaliação das skills**: conjunto de CVs de teste + notas esperadas; medir estabilidade do `cv_scorer` (repetir 5x e ver variância).
 6. **Skill `cover_letter`** e **skill `interview_prep`** (gera perguntas prováveis a partir da vaga).
 7. **Rate limiting** no `/api/chat` antes de publicar.
 8. **Reforçar o protocolo no 20b**: sem o gate de `activeTools`, o gpt-oss-20b às vezes chamava a tool sem carregar e, ao receber o erro, respondia em texto em vez de corrigir. O gate resolve; vale manter o teste `pnpm smoke edit` como regressão.
-9. **Latência no free tier**: cache do resultado do `format_checker` por hash do CV (evita recomputar quando o usuário só pede a nota em seguida) e/ou Dev Tier da Groq.
+9. **Destaques**: a resposta em texto do agente não gera refs (só as tools). Uma tool leve `point_to({ quotes })` deixaria o modelo apontar trechos ao conversar.
+10. **Latência no free tier**: cache do resultado do `format_checker` por hash do CV (evita recomputar quando o usuário só pede a nota em seguida) e/ou Dev Tier da Groq.
 
 ## Riscos conhecidos
 
