@@ -60,23 +60,25 @@ export function AppShell() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -6 }}
                 transition={{ delay: 0.6, duration: 0.5 }}
-                className="pointer-events-none absolute top-1/2 left-full ml-1.5 hidden -translate-y-1/2 items-center gap-1 whitespace-nowrap md:flex"
+                className="pointer-events-none absolute top-1/2 left-full ml-1.5 hidden -translate-y-1/2 items-start gap-1 whitespace-nowrap md:flex"
               >
                 <motion.svg
-                  animate={{ x: [0, -3, 0] }}
-                  transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-                  viewBox="0 0 34 20"
-                  className="h-5 w-[34px] text-primary"
+                  animate={{ x: [0, -4, 0] }}
+                  transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                  viewBox="0 0 64 40"
+                  className="h-10 w-16 text-primary"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth={1.6}
+                  strokeWidth={1.75}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M32 16 C 24 16, 14 13, 5 9" strokeDasharray="3 3" />
-                  <path d="M11 4.5 L5 9 L10.5 13.5" />
+                  {/* haste em S: sai horizontal do texto (embaixo, à direita), sobe e chega horizontal no vértice da ponta */}
+                  <path d="M62 34 C 44 34, 36 20, 10 20" strokeDasharray="4 4.5" />
+                  {/* ponta aberta, simétrica em torno do fim da haste (10,20) = centro vertical da pílula */}
+                  <path d="M18 13 L10 20 L18 27" />
                 </motion.svg>
-                <span className="text-[12px] text-muted-foreground">o que ele sabe fazer</span>
+                <span className="mt-[26px] text-[12px] leading-4 text-muted-foreground">o que ele sabe fazer</span>
               </motion.div>
             )}
           </AnimatePresence>
