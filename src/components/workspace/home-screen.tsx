@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 /**
  * Homepage: aparece quando não há nenhuma sessão (primeiro acesso ou depois
  * de excluir todas). Três formas de começar; o "o que ele faz" fica no botão
- * de info do header, para onde a setinha aponta.
+ * de info do header (a setinha ao lado dele é renderizada pelo AppShell).
  */
 export function HomeScreen() {
   const createSession = useSessions((s) => s.createSession);
@@ -58,7 +58,7 @@ export function HomeScreen() {
       initial="hidden"
       animate="show"
       variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } } }}
-      className="relative mx-auto flex min-h-full max-w-[860px] flex-col justify-center gap-10 pb-16"
+      className="mx-auto flex min-h-full max-w-[860px] flex-col justify-center gap-10 pb-16"
     >
       <input
         id="home-cv-file"
@@ -72,29 +72,6 @@ export function HomeScreen() {
           if (f) void onUpload(f);
         }}
       />
-
-      {/* dica ancorada no topo: a seta termina logo abaixo do botão ⓘ, que fica ~90px à direita do centro do header */}
-      <motion.div
-        variants={fadeUp}
-        aria-hidden
-        className="pointer-events-none absolute top-0 left-1/2 hidden -translate-x-[45%] items-end gap-1 md:flex"
-      >
-        <span className="pb-1 text-[12px] text-muted-foreground">o que ele sabe fazer</span>
-        <motion.svg
-          animate={{ y: [0, -4, 0] }}
-          transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
-          viewBox="0 0 60 60"
-          className="h-[60px] w-[60px] text-primary"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.6}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M6 56 C 10 36, 24 18, 44 6" strokeDasharray="3 3.5" />
-          <path d="M35 5 L44 6 L43 15" />
-        </motion.svg>
-      </motion.div>
 
       {/* marca + tagline */}
       <motion.div variants={fadeUp} className="flex flex-col items-center text-center">
