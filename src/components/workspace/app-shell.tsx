@@ -45,9 +45,41 @@ export function AppShell() {
           </Button>
         </div>
 
-        <div className="glass flex items-center gap-1 rounded-full py-1.5 pr-2 pl-4 shadow-[0_16px_40px_-20px_rgba(0,0,0,.6)]">
-          <Logo size="lg" />
-          <AboutDialog />
+        <div className="relative">
+          <div className="glass flex items-center gap-1 rounded-full py-1.5 pr-2 pl-4 shadow-[0_16px_40px_-20px_rgba(0,0,0,.6)]">
+            <Logo size="lg" />
+            <AboutDialog />
+          </div>
+          {/* Sem sessão (homepage): setinha à direita do ⓘ apontando para ele */}
+          <AnimatePresence>
+            {hasHydrated && !session && (
+              <motion.div
+                key="info-hint"
+                aria-hidden
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -6 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+                className="pointer-events-none absolute top-1/2 left-full ml-1.5 hidden -translate-y-1/2 items-center gap-1 whitespace-nowrap md:flex"
+              >
+                <motion.svg
+                  animate={{ x: [0, -3, 0] }}
+                  transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                  viewBox="0 0 34 20"
+                  className="h-5 w-[34px] text-primary"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.6}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M32 16 C 24 16, 14 13, 5 9" strokeDasharray="3 3" />
+                  <path d="M11 4.5 L5 9 L10.5 13.5" />
+                </motion.svg>
+                <span className="text-[12px] text-muted-foreground">o que ele sabe fazer</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div className="flex items-center justify-end gap-1">
