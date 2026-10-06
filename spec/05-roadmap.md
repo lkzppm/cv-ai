@@ -26,6 +26,7 @@
 ## Status em 2026-10-06
 
 - [x] **Layout responsivo** (`feat/mobile`): rail de sessões em tela cheia abaixo de `md`; abaixo de `lg` o agente vira painel sobreposto (tela cheia no celular) aberto por um botão de chat ao lado da toolbar do CV. Destaques e revisão do `cv_editor` alternam sozinhos entre chat e CV. Detalhes em `spec/03` → "Layout em telas pequenas".
+- [x] **Vercel Web Analytics** (`feat/analytics`): `@vercel/analytics` com `<Analytics />` no layout raiz; visitantes e page views no painel do projeto `cvagent-ufrj`.
 
 ## Próximos passos sugeridos
 
