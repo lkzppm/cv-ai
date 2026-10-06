@@ -27,6 +27,7 @@
 
 - [x] **Layout responsivo** (`feat/mobile`): rail de sessões em tela cheia abaixo de `md`; abaixo de `lg` o agente vira painel sobreposto (tela cheia no celular) aberto por um botão de chat ao lado da toolbar do CV. Destaques e revisão do `cv_editor` alternam sozinhos entre chat e CV. Detalhes em `spec/03` → "Layout em telas pequenas".
 - [x] **Vercel Web Analytics** (`feat/analytics`): `@vercel/analytics` com `<Analytics />` no layout raiz; visitantes e page views no painel do projeto `cvagent-ufrj`.
+- [x] **Deploy automático** (2026-10-06): projeto `cvagent-ufrj` conectado ao repo `lkzppm/cv-ai` (`vercel git connect`), produção = `main`, previews nas demais branches. CI: push e pull_request em grupos de concorrência separados (`fix/ci-concurrency`), depois que um run de PR atrasado cancelou o run de push da `main`.
 
 ## Próximos passos sugeridos
 
