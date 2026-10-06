@@ -488,26 +488,94 @@
   background: rgba(255, 255, 255, 0.18);
 }
 
-/* Troca de tema (lib/theme.ts). Com View Transitions, o tema novo se abre num
-   círculo por cima da foto do antigo: o crossfade padrão sai e o clip-path é
-   animado por JS em ::view-transition-new(root). */
-html.theme-reveal::view-transition-old(root),
-html.theme-reveal::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
-}
-/* Sem View Transitions: fade das cores em tudo, só enquanto a classe estiver no <html>. */
-html.theme-fade,
-html.theme-fade *,
-html.theme-fade *::before,
-html.theme-fade *::after {
+/* ------------------------------------------------------------------
+   Troca de tema (lib/theme.ts): as próprias variáveis de cor fazem a transição.
+   Registradas como <color> (@property), elas interpolam no <html> e tudo que usa
+   var() acompanha a cada quadro: texto, fundos, bordas, gradientes e color-mix.
+   A transição só existe enquanto `theme-fade` está no <html> (senão a carga
+   inicial, que aplica `.dark` depois da hidratação, também faria fade).
+   ------------------------------------------------------------------ */
+@property --brand { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --brand-soft { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --brand-cool { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --background { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --foreground { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --card { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --card-foreground { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --popover { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --popover-foreground { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --primary { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --primary-foreground { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --secondary { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --secondary-foreground { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --muted { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --muted-foreground { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --accent { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --accent-foreground { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --destructive { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --success { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --warning { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --border { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --input { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --ring { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --glass { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --glass-strong { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --glass-border { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --chart-1 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --chart-2 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --chart-3 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --chart-4 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --chart-5 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sidebar { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sidebar-foreground { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sidebar-primary { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sidebar-primary-foreground { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sidebar-accent { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sidebar-accent-foreground { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sidebar-border { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sidebar-ring { syntax: "<color>"; inherits: true; initial-value: transparent; }
+
+html.theme-fade {
   transition:
-    background-color 0.42s ease,
-    color 0.42s ease,
-    border-color 0.42s ease,
-    box-shadow 0.42s ease,
-    fill 0.42s ease,
-    stroke 0.42s ease !important;
+    --brand 0.55s ease-in-out,
+    --brand-soft 0.55s ease-in-out,
+    --brand-cool 0.55s ease-in-out,
+    --background 0.55s ease-in-out,
+    --foreground 0.55s ease-in-out,
+    --card 0.55s ease-in-out,
+    --card-foreground 0.55s ease-in-out,
+    --popover 0.55s ease-in-out,
+    --popover-foreground 0.55s ease-in-out,
+    --primary 0.55s ease-in-out,
+    --primary-foreground 0.55s ease-in-out,
+    --secondary 0.55s ease-in-out,
+    --secondary-foreground 0.55s ease-in-out,
+    --muted 0.55s ease-in-out,
+    --muted-foreground 0.55s ease-in-out,
+    --accent 0.55s ease-in-out,
+    --accent-foreground 0.55s ease-in-out,
+    --destructive 0.55s ease-in-out,
+    --success 0.55s ease-in-out,
+    --warning 0.55s ease-in-out,
+    --border 0.55s ease-in-out,
+    --input 0.55s ease-in-out,
+    --ring 0.55s ease-in-out,
+    --glass 0.55s ease-in-out,
+    --glass-strong 0.55s ease-in-out,
+    --glass-border 0.55s ease-in-out,
+    --chart-1 0.55s ease-in-out,
+    --chart-2 0.55s ease-in-out,
+    --chart-3 0.55s ease-in-out,
+    --chart-4 0.55s ease-in-out,
+    --chart-5 0.55s ease-in-out,
+    --sidebar 0.55s ease-in-out,
+    --sidebar-foreground 0.55s ease-in-out,
+    --sidebar-primary 0.55s ease-in-out,
+    --sidebar-primary-foreground 0.55s ease-in-out,
+    --sidebar-accent 0.55s ease-in-out,
+    --sidebar-accent-foreground 0.55s ease-in-out,
+    --sidebar-border 0.55s ease-in-out,
+    --sidebar-ring 0.55s ease-in-out;
 }
 
 @media print {
