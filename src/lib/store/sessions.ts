@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { UIMessage } from "ai";
 import { SAMPLE_CV } from "@/lib/cv/sample";
+import { applyTheme, transitionTheme } from "@/lib/theme";
 
 /** Uma versão anterior do CV: texto, quando foi substituída e por quem. */
 export type CvVersion = { cv: string; at: number; label?: string };
@@ -37,7 +38,8 @@ type Actions = {
   /** Torna uma versão antiga a atual, registrando a atual no histórico. */
   restoreCv: (index: number) => void;
   setMessages: (id: string, messages: UIMessage[]) => void;
-  toggleTheme: () => void;
+  /** `origin` (px na viewport) é de onde a animação de troca se abre: o centro do botão. */
+  toggleTheme: (origin?: { x: number; y: number }) => void;
   setChatWidth: (px: number) => void;
 };
 
@@ -116,12 +118,13 @@ export const useSessions = create<State & Actions>()(
           }),
         })),
       setChatWidth: (px) => set({ chatWidth: Math.round(Math.min(CHAT_WIDTH.max, Math.max(CHAT_WIDTH.min, px))) }),
-      toggleTheme: () => {
+      toggleTheme: (origin) => {
         const next = get().theme === "light" ? "dark" : "light";
-        // View Transitions API quando disponível: crossfade suave entre temas
-        const doc = document as Document & { startViewTransition?: (cb: () => void) => void };
-        if (doc.startViewTransition) doc.startViewTransition(() => set({ theme: next }));
-        else set({ theme: next });
+        // O DOM muda dentro do callback da transição (applyTheme), não só no efeito do ThemeApplier.
+        transitionTheme(() => {
+          applyTheme(next);
+          set({ theme: next });
+        }, origin);
       },
     }),
     {
