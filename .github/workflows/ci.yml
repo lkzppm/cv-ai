@@ -7,7 +7,10 @@ on:
     branches: [main, dev]
 
 concurrency:
-  group: ci-${{ github.ref }}
+  # Push e pull_request em grupos separados. Um run de pull_request que entra na fila
+  # depois do merge resolve `github.ref` para a branch base; com `ci-${{ github.ref }}`
+  # ele cancelava o run de push da main (aconteceu no PR #23).
+  group: ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
