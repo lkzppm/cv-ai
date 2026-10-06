@@ -2,13 +2,16 @@
 
 import { useEffect } from "react";
 import { useSessions } from "@/lib/store/sessions";
+import { applyTheme } from "@/lib/theme";
 
-/** Aplica a classe `.dark` no <html> conforme o tema salvo na store. */
+/**
+ * Aplica no <html> o tema salvo na store (carga inicial e reidratação). A troca
+ * pelo botão já aplica na hora, dentro da transição animada (`lib/theme.ts`).
+ */
 export function ThemeApplier() {
   const theme = useSessions((s) => s.theme);
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    document.documentElement.style.colorScheme = theme;
+    applyTheme(theme);
   }, [theme]);
   return null;
 }
