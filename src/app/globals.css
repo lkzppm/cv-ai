@@ -488,11 +488,26 @@
   background: rgba(255, 255, 255, 0.18);
 }
 
-/* Transição de tema via View Transitions */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 0.45s;
-  animation-timing-function: var(--ease-out-expo);
+/* Troca de tema (lib/theme.ts). Com View Transitions, o tema novo se abre num
+   círculo por cima da foto do antigo: o crossfade padrão sai e o clip-path é
+   animado por JS em ::view-transition-new(root). */
+html.theme-reveal::view-transition-old(root),
+html.theme-reveal::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+/* Sem View Transitions: fade das cores em tudo, só enquanto a classe estiver no <html>. */
+html.theme-fade,
+html.theme-fade *,
+html.theme-fade *::before,
+html.theme-fade *::after {
+  transition:
+    background-color 0.42s ease,
+    color 0.42s ease,
+    border-color 0.42s ease,
+    box-shadow 0.42s ease,
+    fill 0.42s ease,
+    stroke 0.42s ease !important;
 }
 
 @media print {

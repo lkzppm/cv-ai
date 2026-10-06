@@ -64,6 +64,7 @@ Regras de tom: botões e balão do usuário são `bg-primary` sólidos (sem grad
 - Mensagens: fade + deslocamento curto; cards de skill com spring; toolbar flutuante em pílula com `whileHover/whileTap`.
 - Estado vazio da sidebar: hero com stagger das 4 capacidades (não são botões — o agente decide quando chamar as skills).
 - `prefers-reduced-motion`: o fundo WebGPU não inicia; o fallback CSS é estático.
+- **Troca de tema** (2026-10-06, `lib/theme.ts`): o tema novo se abre num círculo a partir do botão do header, por cima de uma foto do tema antigo (View Transitions API; `clip-path` animado em `::view-transition-new(root)`, 620 ms). A classe `.dark` tem de entrar **dentro** do callback de `startViewTransition` (`applyTheme`): antes ela só entrava num `useEffect`, depois de o navegador já ter fotografado o estado "novo", e a troca saía seca. Sem a API: fade das cores por CSS (`html.theme-fade`). Com `prefers-reduced-motion`: troca direta.
 
 ## Componentes
 
