@@ -2,12 +2,13 @@
 
 import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { DownloadIcon, PencilIcon, PrinterIcon, UploadIcon, Undo2Icon, Loader2Icon, CheckIcon, XIcon, ScanSearchIcon, GitCompareIcon } from "lucide-react";
+import { DownloadIcon, PencilIcon, PrinterIcon, UploadIcon, Undo2Icon, Loader2Icon, CheckIcon, XIcon, ScanSearchIcon, GitCompareIcon, MessageSquareTextIcon } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useActiveSession, useSessions } from "@/lib/store/sessions";
 import { useHighlights } from "@/lib/store/highlights";
 import { useEditProposal } from "@/lib/store/edit-proposal";
+import { useMobileChat } from "@/lib/store/mobile-chat";
 import { CvMarkdown } from "./cv-markdown";
 import { CvHighlightLayer } from "./cv-highlights";
 import { CvDiff, CvDiffView } from "./cv-diff-view";
@@ -40,6 +41,8 @@ export function CvPanel() {
   const clearHighlights = useHighlights((s) => s.clear);
   const pending = useEditProposal((s) => s.pending);
   const dismissProposal = useEditProposal((s) => s.dismiss);
+  const showChat = useMobileChat((s) => s.show);
+  const chatBusy = useMobileChat((s) => s.busy);
 
   if (!session) return null;
   const pendingChanges = pending ? countChanges(diffCv(session.cv, pending.newCv)) : 0;
@@ -85,7 +88,7 @@ export function CvPanel() {
   return (
     <div className="relative mx-auto flex max-w-[760px] flex-col pb-28">
       {/* cabeçalho discreto */}
-      <div className="mb-3 flex items-center gap-2 px-1 text-[11px] text-muted-foreground">
+      <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1.5 px-1 text-[11px] text-muted-foreground">
         <span className="font-semibold uppercase tracking-[0.18em]">CV atual</span>
         <span className="opacity-60">·</span>
         <span>{stats.wordCount} palavras</span>
@@ -98,7 +101,7 @@ export function CvPanel() {
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
-              className="ml-2 flex items-center gap-1 rounded-full border border-dashed border-warning/60 bg-warning/[0.08] py-0.5 pr-0.5 pl-2 text-warning"
+              className="flex items-center gap-1 rounded-full border border-dashed border-warning/60 bg-warning/[0.08] py-0.5 pr-0.5 pl-2 text-warning max-sm:order-last sm:ml-2"
             >
               <GitCompareIcon className="size-3" />
               <span>
@@ -132,7 +135,7 @@ export function CvPanel() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               title="Limpar destaques"
-              className="ml-2 flex items-center gap-1.5 rounded-full border border-dashed border-primary/50 bg-primary/[0.06] px-2 py-0.5 text-primary transition-colors hover:bg-primary/[0.12]"
+              className="flex items-center gap-1.5 rounded-full border border-dashed border-primary/50 bg-primary/[0.06] px-2 py-0.5 text-primary transition-colors hover:bg-primary/[0.12] max-sm:order-last sm:ml-2"
             >
               <ScanSearchIcon className="size-3" />
               {pinned.items.length} {pinned.items.length === 1 ? "destaque" : "destaques"} · {pinned.source}
@@ -165,7 +168,7 @@ export function CvPanel() {
       <motion.div
         layout
         className={cn(
-          "print-area gradient-border relative rounded-3xl bg-card p-8 md:p-12",
+          "print-area gradient-border relative rounded-2xl bg-card p-5 sm:rounded-3xl sm:p-8 md:p-12",
           "shadow-[0_24px_60px_-28px_rgba(0,0,0,.5),0_0_0_1px_var(--glass-border)]",
         )}
       >
@@ -201,7 +204,7 @@ export function CvPanel() {
                 autoFocus
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                className="min-h-[70vh] resize-y border-0 bg-transparent p-0 font-mono text-[13px] leading-relaxed shadow-none focus-visible:ring-0"
+                className="min-h-[70vh] resize-y border-0 bg-transparent p-0 font-mono text-base leading-relaxed shadow-none focus-visible:ring-0 lg:text-[13px]"
                 placeholder="# Seu Nome&#10;&#10;cidade · email · telefone · linkedin&#10;&#10;## Experiência&#10;..."
               />
             </motion.div>
@@ -209,12 +212,12 @@ export function CvPanel() {
         </AnimatePresence>
       </motion.div>
 
-      {/* toolbar flutuante */}
+      {/* toolbar flutuante; abaixo de lg ganha ao lado o botão que abre o chat do agente */}
       <motion.div
         initial={{ y: 24, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.25, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="pointer-events-none fixed inset-x-0 bottom-5 z-30 flex justify-center lg:inset-x-auto lg:left-1/2 lg:-translate-x-1/2"
+        className="pointer-events-none fixed inset-x-0 bottom-5 z-30 flex items-center justify-center gap-2 px-3 lg:inset-x-auto lg:left-1/2 lg:-translate-x-1/2 lg:px-0"
       >
         <TooltipProvider delayDuration={200}>
         <div className="glass pointer-events-auto flex items-center gap-1 rounded-full p-1.5 shadow-[0_20px_60px_-20px_rgba(0,0,0,.7)]">
@@ -279,6 +282,16 @@ export function CvPanel() {
           )}
         </div>
         </TooltipProvider>
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.92 }}
+          onClick={showChat}
+          aria-label="Abrir o chat com o agente"
+          className="pointer-events-auto relative grid size-12 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_20px_60px_-20px_rgba(0,0,0,.7)] lg:hidden"
+        >
+          <MessageSquareTextIcon className="size-5" />
+          {chatBusy && <span aria-hidden className="pulse-dot absolute top-0 right-0 size-3 rounded-full border-2 border-background bg-success" />}
+        </motion.button>
       </motion.div>
     </div>
   );

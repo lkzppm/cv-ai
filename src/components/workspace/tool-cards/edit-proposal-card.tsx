@@ -4,6 +4,7 @@ import { CheckIcon, GitCompareIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSessions } from "@/lib/store/sessions";
 import { useEditProposal } from "@/lib/store/edit-proposal";
+import { useMobileChat } from "@/lib/store/mobile-chat";
 import { countChanges, diffCv } from "@/lib/cv/diff";
 
 type Output = {
@@ -22,6 +23,8 @@ export function EditProposalCard({ output, toolCallId }: { output: Output; toolC
   const pending = useEditProposal((s) => s.pending);
   const propose = useEditProposal((s) => s.propose);
   const dismiss = useEditProposal((s) => s.dismiss);
+  // No celular o chat cobre o CV: revisar o diff exige fechar o chat.
+  const hideChat = useMobileChat((s) => s.hide);
 
   const reviewing = pending?.toolCallId === toolCallId;
   const remaining = countChanges(diffCv(currentCv, reviewing ? pending.newCv : output.newCv));
@@ -63,10 +66,19 @@ export function EditProposalCard({ output, toolCallId }: { output: Output; toolC
             <Button size="sm" variant="outline" onClick={dismiss}>
               <XIcon /> Recusar tudo
             </Button>
+            <Button size="sm" variant="ghost" className="lg:hidden" onClick={hideChat}>
+              <GitCompareIcon /> Ver no CV
+            </Button>
           </>
         ) : (
           <>
-            <Button size="sm" onClick={() => propose({ toolCallId, newCv: output.newCv, summary: output.summary })}>
+            <Button
+              size="sm"
+              onClick={() => {
+                propose({ toolCallId, newCv: output.newCv, summary: output.summary });
+                hideChat();
+              }}
+            >
               <GitCompareIcon /> Revisar no CV
             </Button>
             <Button size="sm" variant="outline" onClick={() => setCv(output.newCv, { label: "cv_editor" })}>

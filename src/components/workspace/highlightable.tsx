@@ -3,6 +3,7 @@
 import { ScanSearchIcon } from "lucide-react";
 import type { CvHighlight } from "@/lib/cv/refs";
 import { highlightKey, useHighlights } from "@/lib/store/highlights";
+import { useMobileChat } from "@/lib/store/mobile-chat";
 import { cn } from "@/lib/utils";
 
 type Props = React.HTMLAttributes<HTMLDivElement> & {
@@ -13,15 +14,22 @@ type Props = React.HTMLAttributes<HTMLDivElement> & {
 
 /**
  * Linha de um tool card ligada a trechos do CV: passar o mouse mostra o
- * destaque no painel; clicar fixa (e clicar de novo solta). Sem refs,
+ * destaque no painel; clicar fixa (e clicar de novo solta). No celular o chat
+ * cobre o CV, então fixar também fecha o chat para o trecho aparecer. Sem refs,
  * renderiza um div comum.
  */
 export function Highlightable({ item, bare, className, children, onClick, ...props }: Props) {
   const focusedKey = useHighlights((s) => s.focusedKey);
   const setHover = useHighlights((s) => s.setHover);
   const toggleFocus = useHighlights((s) => s.toggleFocus);
+  const hideChat = useMobileChat((s) => s.hide);
   const hasRefs = item.refs.length > 0;
   const focused = hasRefs && focusedKey === highlightKey(item);
+
+  const toggle = () => {
+    toggleFocus(item);
+    if (!focused) hideChat();
+  };
 
   if (!hasRefs) {
     return (
@@ -41,13 +49,13 @@ export function Highlightable({ item, bare, className, children, onClick, ...pro
       onMouseEnter={() => setHover(item)}
       onMouseLeave={() => setHover(null)}
       onClick={(e) => {
-        toggleFocus(item);
+        toggle();
         onClick?.(e);
       }}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          toggleFocus(item);
+          toggle();
         }
       }}
       className={cn(
@@ -64,7 +72,7 @@ export function Highlightable({ item, bare, className, children, onClick, ...pro
           aria-hidden
           className={cn(
             "pointer-events-none absolute top-1.5 right-1.5 size-3.5 text-primary transition-opacity",
-            focused ? "opacity-90" : "opacity-0 group-hover/hl:opacity-70",
+            focused ? "opacity-90" : "opacity-0 group-hover/hl:opacity-70 pointer-coarse:opacity-50",
           )}
         />
       )}

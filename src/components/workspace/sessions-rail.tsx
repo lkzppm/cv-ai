@@ -2,13 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { PlusIcon, Trash2Icon, PencilIcon, CheckIcon, FileTextIcon, MessageSquareIcon } from "lucide-react";
+import { PlusIcon, Trash2Icon, PencilIcon, CheckIcon, FileTextIcon, MessageSquareIcon, XIcon } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSessions } from "@/lib/store/sessions";
 import { cn } from "@/lib/utils";
 
-export function SessionsRail() {
+/**
+ * `onClose` liga o modo tela cheia (celular): mostra o botão de fechar e fecha
+ * o rail ao escolher ou criar uma sessão.
+ */
+export function SessionsRail({ onClose }: { onClose?: () => void }) {
   const sessions = useSessions((s) => s.sessions);
   const activeId = useSessions((s) => s.activeId);
   const setActive = useSessions((s) => s.setActive);
@@ -31,9 +35,23 @@ export function SessionsRail() {
           <span className="pl-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             Sessões
           </span>
-          <IconButton label="Nova sessão" onClick={() => createSession()} accent>
-            <PlusIcon className="size-4" strokeWidth={2.5} />
-          </IconButton>
+          <div className="flex items-center gap-1.5">
+            <IconButton
+              label="Nova sessão"
+              onClick={() => {
+                createSession();
+                onClose?.();
+              }}
+              accent
+            >
+              <PlusIcon className="size-4" strokeWidth={2.5} />
+            </IconButton>
+            {onClose && (
+              <IconButton label="Fechar sessões" onClick={onClose}>
+                <XIcon className="size-4" />
+              </IconButton>
+            )}
+          </div>
         </div>
 
         {/* O Viewport do Radix envolve o conteúdo num div `display: table`, que cresce
@@ -60,7 +78,10 @@ export function SessionsRail() {
                     {active && <ActiveBracket />}
 
                     <button
-                      onClick={() => setActive(s.id)}
+                      onClick={() => {
+                        setActive(s.id);
+                        onClose?.();
+                      }}
                       className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
                       aria-current={active ? "true" : undefined}
                     >
@@ -84,7 +105,7 @@ export function SessionsRail() {
                             }}
                             onBlur={() => commitRename(s.id)}
                             onClick={(e) => e.stopPropagation()}
-                            className="w-full rounded-md bg-background/60 px-1.5 py-0.5 text-sm outline-none ring-1 ring-primary/40"
+                            className="w-full rounded-md bg-background/60 px-1.5 py-0.5 text-sm outline-none ring-1 ring-primary/40 pointer-coarse:text-base"
                           />
                         ) : (
                           <span className={cn("block truncate text-sm", active ? "font-medium text-foreground" : "text-foreground/85")}>
@@ -100,11 +121,11 @@ export function SessionsRail() {
                       </span>
                     </button>
 
-                    {/* ações: aparecem no hover */}
+                    {/* ações: aparecem no hover; sempre visíveis no toque, que não tem hover */}
                     <div
                       className={cn(
                         "flex shrink-0 items-center gap-0.5 transition-opacity",
-                        isEditing ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus-within:opacity-100",
+                        isEditing ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100",
                       )}
                     >
                       {isEditing ? (
@@ -218,7 +239,7 @@ function IconButton({
           aria-label={label}
           className={cn(
             "grid place-items-center rounded-lg transition-colors",
-            small ? "size-7" : "size-8",
+            small ? "size-7 pointer-coarse:size-9" : "size-8",
             accent
               ? "bg-primary text-primary-foreground hover:brightness-110"
               : danger

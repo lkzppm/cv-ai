@@ -23,9 +23,13 @@
 - [x] **Homepage sem sessão** (`fix/home-empty-state`): três formas de começar (enviar, colar, exemplo); corrige o `TypeError` de `session.cv` ao excluir a última sessão.
 - [x] **Revisão do `cv_editor` em diff** (`feat/edit-review`): antes/depois por bloco dentro do painel, aceitar/recusar por bloco e no total; clicar numa marcação do CV leva ao item no chat.
 
+## Status em 2026-10-06
+
+- [x] **Layout responsivo** (`feat/mobile`): rail de sessões em tela cheia abaixo de `md`; abaixo de `lg` o agente vira painel sobreposto (tela cheia no celular) aberto por um botão de chat ao lado da toolbar do CV. Destaques e revisão do `cv_editor` alternam sozinhos entre chat e CV. Detalhes em `spec/03` → "Layout em telas pequenas".
+
 ## Próximos passos sugeridos
 
-1. **Drawer da sidebar em telas < lg** (hoje fica oculta).
+1. **Celular de verdade**: validar o layout responsivo em iOS/Android reais (teclado virtual no chat em tela cheia, botão "voltar" do Android fechando os painéis).
 2. **Diff por palavra** dentro de um bloco do `cv_editor` (hoje o diff é por linha; um bullet reescrito aparece inteiro riscado + inteiro novo).
 3. **Exportar PDF com layout** (ex.: `@react-pdf/renderer` ou print CSS mais refinado).
 4. **Persistência real** (Postgres + Drizzle) e login — permitiria compartilhar sessões.

@@ -18,6 +18,8 @@ import { Shimmer } from "@/components/ai-elements/shimmer";
 import { useActiveSession, useSessions } from "@/lib/store/sessions";
 import { useHighlights } from "@/lib/store/highlights";
 import { useEditProposal } from "@/lib/store/edit-proposal";
+import { useMobileChat } from "@/lib/store/mobile-chat";
+import { BELOW_LG, useMediaQuery } from "@/lib/use-media-query";
 import type { CvHighlight } from "@/lib/cv/refs";
 import { ScoreCard, scoreHighlights } from "./tool-cards/score-card";
 import { FormatCard, formatHighlights } from "./tool-cards/format-card";
@@ -70,8 +72,16 @@ export function AgentSidebar() {
   const busy = status === "submitted" || status === "streaming";
   const activity = busy ? findActivity(messages) : null;
 
+  // Com o chat fechado no celular, o botão que o abre mostra que o agente segue trabalhando.
+  const setChatBusy = useMobileChat((s) => s.setBusy);
+  useEffect(() => {
+    setChatBusy(busy);
+    return () => setChatBusy(false);
+  }, [busy, setChatBusy]);
+  const compact = useMediaQuery(BELOW_LG);
+
   return (
-    <div className="relative flex h-full min-h-0 flex-col">
+    <div className="relative flex min-h-0 flex-1 flex-col">
       {/* indicador flutuante de skill em execução */}
       <AnimatePresence>
         {activity && (
@@ -92,7 +102,7 @@ export function AgentSidebar() {
 
       <Conversation className="scrollbar-none min-h-0 flex-1">
         <AutoScroll count={messages.length} status={status} />
-        <ConversationContent className="gap-5 p-4">
+        <ConversationContent className="gap-5 p-3 sm:p-4">
           {messages.length === 0 && <EmptyHero cv={cvStats} onExample={(t) => composerRef.current?.setText(t)} />}
           <AnimatePresence initial={false}>
             {messages.map((m) => (
@@ -107,7 +117,7 @@ export function AgentSidebar() {
                     className={
                       m.role === "user"
                         ? "group-[.is-user]:rounded-2xl group-[.is-user]:rounded-br-[3px] group-[.is-user]:bg-primary group-[.is-user]:text-white"
-                        : "max-w-full rounded-2xl rounded-bl-[3px] border border-glass-border bg-background/30 px-4 py-3"
+                        : "max-w-full rounded-2xl rounded-bl-[3px] border border-glass-border bg-background/30 px-3 py-3 sm:px-4"
                     }
                   >
                     {m.parts.map((part, i) => {
@@ -207,7 +217,7 @@ export function AgentSidebar() {
             void sendMessage({ text });
           }}
           onStop={stop}
-          placeholder="Peça uma análise, cole o link de uma vaga ou diga o que mudar…"
+          placeholder={compact ? "Peça uma análise ou uma mudança…" : "Peça uma análise, cole o link de uma vaga ou diga o que mudar…"}
         />
       </div>
     </div>
