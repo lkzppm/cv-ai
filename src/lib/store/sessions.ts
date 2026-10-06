@@ -38,8 +38,7 @@ type Actions = {
   /** Torna uma versão antiga a atual, registrando a atual no histórico. */
   restoreCv: (index: number) => void;
   setMessages: (id: string, messages: UIMessage[]) => void;
-  /** `origin` (px na viewport) é de onde a animação de troca se abre: o centro do botão. */
-  toggleTheme: (origin?: { x: number; y: number }) => void;
+  toggleTheme: () => void;
   setChatWidth: (px: number) => void;
 };
 
@@ -118,13 +117,13 @@ export const useSessions = create<State & Actions>()(
           }),
         })),
       setChatWidth: (px) => set({ chatWidth: Math.round(Math.min(CHAT_WIDTH.max, Math.max(CHAT_WIDTH.min, px))) }),
-      toggleTheme: (origin) => {
+      toggleTheme: () => {
         const next = get().theme === "light" ? "dark" : "light";
-        // O DOM muda dentro do callback da transição (applyTheme), não só no efeito do ThemeApplier.
+        // O tema entra no DOM junto com a classe que liga o fade, não só no efeito do ThemeApplier.
         transitionTheme(() => {
           applyTheme(next);
           set({ theme: next });
-        }, origin);
+        });
       },
     }),
     {
