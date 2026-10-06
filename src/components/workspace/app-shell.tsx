@@ -126,16 +126,7 @@ export function AppShell() {
               <GitHubMark />
             </a>
           </Button>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={(e) => {
-              const r = e.currentTarget.getBoundingClientRect();
-              toggleTheme({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
-            }}
-            aria-label="Alternar tema"
-            className="rounded-xl"
-          >
+          <Button variant="ghost" size="icon-sm" onClick={toggleTheme} aria-label="Alternar tema" className="rounded-xl">
             <AnimatePresence mode="wait" initial={false}>
               <motion.span
                 key={theme}

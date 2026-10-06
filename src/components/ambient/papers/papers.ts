@@ -1,6 +1,7 @@
 import { clock, effect, frameLoop, init, surface } from "vgpu";
 import type { FrameLoopHandle } from "vgpu";
 import papersShader from "./papers.wgsl";
+import { THEME_FADE_MS } from "@/lib/theme";
 
 export interface PapersOptions {
   canvas: HTMLCanvasElement;
@@ -49,11 +50,20 @@ export function startPapers(options: PapersOptions): () => void {
       if (disposed) return;
 
       const time = clock(gpu);
+      // O tema troca com fade (lib/theme.ts): o uniform `dark` faz a mesma curva e duração
+      // das variáveis CSS, em vez de virar num quadro.
+      let dark = options.getDark() ? 1 : 0;
+      const fade = { from: dark, to: dark, start: 0 };
       loop = frameLoop(gpu, (frame) => {
         if (document.hidden) return;
+        const now = performance.now();
+        const wanted = options.getDark() ? 1 : 0;
+        if (wanted !== fade.to) Object.assign(fade, { from: dark, to: wanted, start: now });
+        const t = Math.min(1, (now - fade.start) / THEME_FADE_MS);
+        dark = fade.from + (fade.to - fade.from) * (t * t * (3 - 2 * t)); // smoothstep ≈ ease-in-out
         eased.x += (target.x - eased.x) * 0.05;
         eased.y += (target.y - eased.y) * 0.05;
-        fx.set({ params: { time: time.time, dark: options.getDark() ? 1 : 0, pointer: [eased.x, eased.y] } });
+        fx.set({ params: { time: time.time, dark, pointer: [eased.x, eased.y] } });
         frame.pass(canvasSurface, fx);
       });
     } catch (error) {
