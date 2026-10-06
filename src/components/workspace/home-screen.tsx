@@ -58,7 +58,7 @@ export function HomeScreen() {
       initial="hidden"
       animate="show"
       variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } } }}
-      className="mx-auto flex min-h-full max-w-[860px] flex-col justify-center gap-10 pb-16"
+      className="mx-auto flex min-h-full max-w-[860px] flex-col justify-center gap-8 pb-10 sm:gap-10 sm:pb-16"
     >
       <input
         id="home-cv-file"
@@ -97,14 +97,14 @@ export function HomeScreen() {
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.985 }}
             className={cn(
-              "group flex cursor-pointer flex-col items-start gap-3 rounded-2xl border p-4 text-left transition-colors disabled:opacity-60",
+              "group flex cursor-pointer items-center gap-3 rounded-2xl border p-4 text-left transition-colors disabled:opacity-60 md:flex-col md:items-start",
               a.primary
                 ? "gradient-border border-primary/30 bg-card/70 shadow-[0_24px_60px_-32px_rgba(0,0,0,.5)]"
                 : "border-glass-border bg-background/30 hover:border-primary/40",
               a.primary && uploading && "pointer-events-none opacity-60",
             )}
           >
-            <span className={cn("grid size-10 place-items-center rounded-xl ring-1", a.primary ? "bg-primary text-primary-foreground ring-primary" : "bg-background/40 text-primary ring-primary/20")}>
+            <span className={cn("grid size-10 shrink-0 place-items-center rounded-xl ring-1", a.primary ? "bg-primary text-primary-foreground ring-primary" : "bg-background/40 text-primary ring-primary/20")}>
               {a.primary && uploading ? <Loader2Icon className="size-5 animate-spin" /> : <a.icon className="size-5" />}
             </span>
             <span>

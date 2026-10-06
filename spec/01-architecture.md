@@ -59,6 +59,8 @@ src/
     cv/parse.ts    parser heurístico (seções, bullets, contato, métricas)
     cv/sample.ts   CV de exemplo para sessões novas
     store/sessions.ts  zustand persistido
+    store/mobile-chat.ts  chat sobreposto em telas < lg (aberto/ocupado; não persiste)
+    use-media-query.ts  matchMedia reativo com os cortes md/lg do Tailwind
     web/fetch-page.ts  HTML → texto para links de vaga
 spec/              esta pasta
 ```
