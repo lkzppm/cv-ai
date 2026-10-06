@@ -63,7 +63,7 @@ export function EmptyHero({ cv, onExample }: Props) {
         </motion.div>
         <h2 className="text-[22px] font-semibold tracking-tight">Olá, sou o CV Agent.</h2>
         <p className="mt-1.5 max-w-[34ch] text-[13.5px] leading-snug text-muted-foreground">
-          Eu leio o currículo do painel ao lado e escolho sozinho a ferramenta certa para cada pedido.
+          Eu leio o currículo desta sessão e escolho sozinho a ferramenta certa para cada pedido.
         </p>
       </motion.div>
 

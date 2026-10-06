@@ -1,13 +1,17 @@
 "use client";
 
+import { useMobileChat } from "@/lib/store/mobile-chat";
+
 /**
  * Leva o usuário do painel do CV até a referência correspondente no chat.
  *
  * `key` é a identidade do item (`highlightKey`), gravada pelo `<Highlightable>`
  * em `data-hl-key`; `toolCallId` identifica o card da tool (`data-tool-call`).
  * Se o card estiver recolhido, abre antes de rolar. O alvo pisca brevemente.
+ * Em telas pequenas o chat é um painel sobreposto: abre junto.
  */
 export function revealInChat(key?: string, toolCallId?: string) {
+  useMobileChat.getState().show();
   const card = toolCallId ? document.querySelector<HTMLElement>(`[data-tool-call="${CSS.escape(toolCallId)}"]`) : null;
   const closedTrigger = card?.querySelector<HTMLButtonElement>('button[data-state="closed"]');
   if (closedTrigger) closedTrigger.click();

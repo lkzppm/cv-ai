@@ -97,7 +97,8 @@ export function ChatComposer({ status, onSend, onStop, placeholder, ref: handleR
         placeholder={placeholder}
         aria-label="Mensagem para o agente"
         style={{ height: LINE }}
-        className="scrollbar-none block min-w-0 flex-1 resize-none self-center bg-transparent py-0 text-[14px] leading-6 text-foreground outline-none transition-[height] duration-200 ease-out placeholder:text-muted-foreground/70"
+        // 16px abaixo de lg: o Safari do iOS dá zoom na página ao focar campos menores que isso.
+        className="scrollbar-none block min-w-0 flex-1 resize-none self-center bg-transparent py-0 text-[16px] leading-6 lg:text-[14px] text-foreground outline-none transition-[height] duration-200 ease-out placeholder:text-muted-foreground/70"
       />
 
       <motion.button

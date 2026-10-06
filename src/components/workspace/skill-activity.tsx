@@ -40,7 +40,7 @@ export function SkillLoadedRow({
         </span>
         <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">skill</span>
         <span className="truncate text-sm font-medium">{name ?? "…"}</span>
-        <span className="ml-auto flex items-center gap-1.5 text-[11px] text-muted-foreground">
+        <span className="ml-auto flex shrink-0 items-center gap-1.5 text-[11px] whitespace-nowrap text-muted-foreground">
           {loading ? (
             <Shimmer>carregando instruções…</Shimmer>
           ) : failed ? (
@@ -50,7 +50,8 @@ export function SkillLoadedRow({
           ) : (
             <>
               <BookOpenIcon className="size-3 text-primary" />
-              {alreadyLoaded ? "já carregada" : "instruções carregadas"}
+              {/* no celular fica só o ícone: o nome da skill precisa do espaço */}
+              <span className="max-sm:sr-only">{alreadyLoaded ? "já carregada" : "instruções carregadas"}</span>
             </>
           )}
         </span>
@@ -83,11 +84,11 @@ export function SkillToolHeader({ name, state, subtitle, autoLoaded }: { name: s
         <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">tool</span>
         <span className="truncate text-sm font-medium">
           {name}
-          {subtitle && <span className="text-muted-foreground"> · {subtitle}</span>}
+          {subtitle && <span className="text-muted-foreground max-sm:hidden"> · {subtitle}</span>}
           {autoLoaded && (
             <span
               title="O agente chamou a tool sem load_skill; a skill foi carregada junto com esta execução."
-              className="ml-2 rounded-full border border-dashed border-primary/50 bg-primary/[0.06] px-1.5 py-px text-[10px] font-medium text-primary"
+              className="ml-2 rounded-full border border-dashed border-primary/50 bg-primary/[0.06] px-1.5 py-px text-[10px] font-medium text-primary max-sm:hidden"
             >
               skill carregada aqui
             </span>

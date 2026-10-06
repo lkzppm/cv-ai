@@ -37,13 +37,13 @@ export function AboutDialog() {
           <InfoIcon />
         </Button>
       </DialogTrigger>
-      <DialogContent className="glass-strong max-w-[720px] overflow-hidden rounded-3xl p-0 sm:max-w-[720px]">
+      <DialogContent className="glass-strong max-w-[calc(100%-1.5rem)] overflow-hidden rounded-3xl p-0 sm:max-w-[720px]">
         <DialogTitle className="sr-only">Sobre o CV Agent</DialogTitle>
         <DialogDescription className="sr-only">O que o agente é, quais skills tem e com que tecnologias foi feito.</DialogDescription>
 
-        <div className="grid min-h-[440px] grid-cols-[180px_1fr]">
-          {/* sub-menu */}
-          <nav className="flex flex-col gap-1 border-r border-glass-border bg-background/20 p-3">
+        <div className="grid max-h-[85dvh] grid-rows-[auto_minmax(0,1fr)] sm:min-h-[440px] sm:grid-cols-[180px_1fr] sm:grid-rows-1">
+          {/* sub-menu: abas no topo no celular (pr-12 = espaço do botão de fechar), coluna a partir de sm */}
+          <nav className="scrollbar-none flex gap-1 overflow-x-auto border-b border-glass-border bg-background/20 p-2 pr-12 sm:flex-col sm:overflow-visible sm:border-r sm:border-b-0 sm:p-3">
             {SECTIONS.map((s) => {
               const active = s.key === section;
               return (
@@ -52,7 +52,7 @@ export function AboutDialog() {
                   type="button"
                   onClick={() => setSection(s.key)}
                   className={cn(
-                    "relative flex items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[13px] transition-colors",
+                    "relative flex shrink-0 items-center gap-2 rounded-xl px-2.5 py-2 text-left text-[13px] whitespace-nowrap transition-colors sm:gap-2.5 sm:px-3",
                     active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
                   )}
                 >
@@ -71,7 +71,7 @@ export function AboutDialog() {
           </nav>
 
           {/* conteúdo */}
-          <div className="relative min-w-0 p-6">
+          <div className="relative min-w-0 overflow-y-auto p-4 sm:p-6">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={section}

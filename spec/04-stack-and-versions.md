@@ -20,6 +20,7 @@ Versões fixadas em 2026-10-03 (`package.json` é a fonte da verdade):
 | @vgpu/wgsl, @vgpu/wgsl-std | 0.5.0 (dev) | loader `.wgsl` para Turbopack/webpack + stdlib WGSL (noise, hash, color) |
 | motion | 14.x | animações (`motion/react`): AnimatePresence, layoutId, springs |
 | unpdf | 1.8.x | `getDocumentProxy` + `extractText` |
+| @vercel/analytics | 2.x | Web Analytics da Vercel: `<Analytics />` de `@vercel/analytics/next` no `app/layout.tsx` (só coleta em produção) |
 | react-markdown + remark-gfm | 10.x / 4.x | render do CV |
 
 ## Softwares a instalar (do zero)

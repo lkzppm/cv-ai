@@ -15,10 +15,32 @@
           fundo: vgpu — folhas de CV esboçadas (WebGPU) · fallback CSS
 ```
 
-- `< lg`: a sidebar do agente fica oculta (TODO: drawer). O rail esquerdo começa fechado e abre pelo botão do header.
+- `< lg`: a sidebar do agente vira um painel sobreposto (tela cheia no celular); `< md`: o rail de sessões abre em tela cheia. Ver "Layout em telas pequenas" abaixo. O rail esquerdo começa fechado e abre pelo botão do header.
 - **Divisor móvel** entre CV e chat (`role="separator"`, 12px, cursor `col-resize`): arraste muda `chatWidth` na store (persistido, 360–820px); duplo clique volta ao padrão (460px).
 - Barras de rolagem invisíveis no CV e no chat (`@utility scrollbar-none`, que também cobre o container interno do `Conversation`).
 - O painel do CV tem `print-area`: `window.print()` imprime só a folha (salvar como PDF).
+
+## Layout em telas pequenas (2026-10-06)
+
+Dois cortes, os mesmos do Tailwind, lidos em JS por `useMediaQuery` (`lib/use-media-query.ts`, `BELOW_MD` / `BELOW_LG`) porque o `motion` anima propriedades diferentes em cada modo:
+
+| Largura | Rail de sessões | Agente (chat) |
+|---|---|---|
+| `≥ lg` (1024px) | coluna de 248px (spring na largura) | coluna redimensionável |
+| `md`–`lg` | coluna de 248px | gaveta à direita (480px) com véu escuro atrás |
+| `sm`–`md` | tela cheia | gaveta à direita (480px) com véu |
+| `< sm` (celular) | tela cheia | tela cheia |
+
+- **Uma única instância do `AgentSidebar`**, sempre montada: abaixo de `lg` o mesmo `<aside>` troca de classes (`fixed inset-y-0 right-0`) e desliza com `x: 100% ↔ 0%`. Não desmontar é o que mantém o `useChat` (e o streaming) vivo ao fechar o painel ou girar o tablet. Fechado, o painel fica `inert`; aberto, quem fica `inert` é o header e o `<main>`.
+- **Estado em `lib/store/mobile-chat.ts`** (`open`, `busy`; não persiste; ignorado no desktop), porque os dois lados se chamam:
+  - CV → chat: o **botão de chat** (círculo azul ao lado da toolbar do CV, `lg:hidden`) e `revealInChat` (toque numa marcação ou em "alteração k/N") chamam `show()`.
+  - chat → CV: fixar um item de card (`<Highlightable>`) e os botões **Revisar no CV / Ver no CV** do `cv_editor` chamam `hide()`, senão o destaque/diff apareceria atrás do chat. O ✕ do cabeçalho do painel, o véu e `Esc` também fecham.
+  - Trocar de sessão fecha o chat e volta o `<main>` ao topo. Enquanto o agente responde com o chat fechado, o botão mostra um ponto pulsante (`busy`).
+- **Rail em tela cheia** (`SessionsRail` com `onClose`): ganha um ✕ e fecha ao escolher ou criar uma sessão. Renomear/excluir ficam sempre visíveis em telas de toque (`pointer-coarse:`), que não têm hover.
+- **Empilhamento**: os painéis vivem no container das colunas, que abaixo de `lg` sobe para `z-30` para cobrir o header (`z-20`). Superfície `@utility surface-sheet`: opaca, sem `backdrop-filter` (blur em tela cheia sobre o fundo animado custa caro no celular), com um brilho azul no topo.
+- **Campos de texto com 16px** abaixo de `lg` (composer, editor do CV; renomear sessão no toque): o Safari do iOS dá zoom na página ao focar campos menores. `viewport.interactiveWidget = "resizes-content"` (`app/layout.tsx`) faz o teclado encolher o layout no Chrome/Android; o Safari ignora e rola a página até o campo.
+- Ajustes de densidade: folha do CV com `p-5` e margens laterais mínimas, cartões da homepage em linha (ícone à esquerda), diálogo "Sobre" com abas no topo e rolagem interna, GitHub do header some abaixo de 360px, status das skills só com ícone no chat.
+- Testado em Chromium emulando 320, 390 e 820px (toque) e 1440px; **não testado em aparelho real** (teclado do iOS em especial).
 
 ## Paleta "Azure" (tokens em `globals.css`) — desde 2026-10-03 (v3)
 
